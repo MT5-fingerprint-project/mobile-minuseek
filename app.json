@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "mobile-dacty",
-    "slug": "mobile-dacty",
+    "name": "mobile-minuseek",
+    "slug": "mobile-minuseek",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mobiledacty",
+    "scheme": "mobileminuseek",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"
