@@ -41,6 +41,24 @@ module.exports = {
         border: '#e7e6e1',
         input: '#e7e6e1',
         ring: '#b3b0a6',
+        // Status palette mirrors front-minuseek `index.css` (used by CaseStatusBadge).
+        grey: {
+          'light-1': '#EEEEEE',
+          'medium-1': '#A8A8A8',
+          dark: '#383838',
+        },
+        orange: {
+          light: '#FFECD8',
+          medium: '#D85703',
+        },
+        blue: {
+          'light-1': '#E0E0E8',
+          'dark-1': '#091029',
+        },
+        green: {
+          light: '#EAFEF3',
+          medium: '#128755',
+        },
       },
       borderRadius: {
         lg: '10px',
