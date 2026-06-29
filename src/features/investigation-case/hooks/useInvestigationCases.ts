@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { InvestigationCaseAPI } from '@/features/investigation-case/services/investigationCaseAPI.services';
 import type { InvestigationCaseCreateInput } from '@/features/investigation-case/types/investigationCase';
@@ -24,6 +24,14 @@ function toReadableError(error: unknown): Error {
     }
   }
   return new Error('Une erreur est survenue');
+}
+
+export function useInvestigationCases() {
+  return useQuery({
+    queryKey: investigationCaseKeys.lists(),
+    queryFn: () => InvestigationCaseAPI.getAll(),
+    select: ({ data }) => data,
+  });
 }
 
 export function useCreateInvestigationCase() {
