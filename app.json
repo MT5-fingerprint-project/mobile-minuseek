@@ -34,6 +34,18 @@
             "imageWidth": 76
           }
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "L'application a besoin de l'accès à la caméra pour prendre des photos."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "savePhotosPermission": "L'application a besoin d'enregistrer les photos dans votre galerie."
+        }
       ]
     ],
     "experiments": {

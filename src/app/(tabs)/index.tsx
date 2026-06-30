@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,6 +11,7 @@ import {
 } from '@/features/investigation-case';
 
 export default function HomeScreen() {
+  const router = useRouter();
   const [isCreateOpen, setCreateOpen] = useState(false);
 
   const { data: investigationCases = [], isPending } = useInvestigationCases();
@@ -26,6 +28,9 @@ export default function HomeScreen() {
           investigationCases={investigationCases}
           isLoading={isPending}
           onAddClick={() => setCreateOpen(true)}
+          onCasePress={(investigationCase) =>
+            router.push({ pathname: '/case/[id]', params: { id: investigationCase.id } })
+          }
         />
       </View>
 
