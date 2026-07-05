@@ -5,27 +5,38 @@ import Constants from 'expo-constants';
  */
 const API_PORT = 3000;
 
+const KEYCLOAK_PORT = 8080;
+
+function metroHost(): string | undefined {
+  return Constants.expoConfig?.hostUri?.split(':')[0];
+}
+
 /**
  * URL de base de l'API back-minuseek.
  *
- * Résolution :
- *   1. `EXPO_PUBLIC_API_URL` si défini → override explicite (back distant, staging,
- *      téléphone hors du même réseau via tunnel, etc.).
- *   2. Sinon, on dérive l'hôte depuis celui qui sert Metro (`Constants.expoConfig.hostUri`,
- *      ex. "192.168.43.223:8081"). Le téléphone joint déjà Metro sur cette IP, donc il
- *      joindra le back au même hôte sur le port 3000 — sans IP à coder en dur ni à
- *      ré-éditer quand le réseau change.
- *   3. Fallback `localhost` (simulateur iOS / web).
+ * Résolution : 1. `EXPO_PUBLIC_API_URL` si défini (override explicite : back distant,
+ * staging, téléphone hors réseau via tunnel) ; 2. hôte Metro + port 3000 ;
+ * 3. fallback `localhost` (simulateur iOS / web).
  */
 function resolveApiUrl(): string {
   const fromEnv = process.env.EXPO_PUBLIC_API_URL;
   if (fromEnv) return fromEnv;
 
-  // hostUri ressemble à "192.168.43.223:8081" — on ne garde que l'hôte.
-  const host = Constants.expoConfig?.hostUri?.split(':')[0];
+  const host = metroHost();
   if (host) return `http://${host}:${API_PORT}/api`;
 
   return `http://localhost:${API_PORT}/api`;
 }
 
+function resolveKeycloakUrl(): string {
+  const fromEnv = process.env.EXPO_PUBLIC_KEYCLOAK_URL;
+  if (fromEnv) return fromEnv;
+
+  const host = metroHost();
+  if (host) return `http://${host}:${KEYCLOAK_PORT}`;
+
+  return `http://localhost:${KEYCLOAK_PORT}`;
+}
+
 export const API_URL = resolveApiUrl();
+export const KEYCLOAK_URL = resolveKeycloakUrl();
