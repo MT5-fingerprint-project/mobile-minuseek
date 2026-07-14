@@ -46,7 +46,8 @@
         {
           "savePhotosPermission": "L'application a besoin d'enregistrer les photos dans votre galerie."
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -1,13 +1,16 @@
 import axios from 'axios';
+
+import {
+  getActiveSession,
+  getValidAccessToken,
+  signOut,
+} from '@/features/shared/auth/session';
 import { API_URL } from '@/features/shared/constants/global.constants';
 
 /**
- * Shared axios instance, mirroring the web front's `apiClient`.
- *
- * Auth note: the web front reads `accessToken` from `localStorage`. React Native
- * has no `localStorage`, so token injection is intentionally left as a hook to be
- * wired to `expo-secure-store` once an auth flow exists. For now requests are
- * unauthenticated, which is enough to create an investigation case.
+ * Instance axios partagée, miroir de l'`apiClient` du front web : chaque requête
+ * porte le token du tenant actif (rafraîchi si besoin) + le header `X-Tenant-Slug`,
+ * exactement ce que la `MultiRealmJwtStrategy` du back exige.
  */
 export const apiClient = axios.create({
   baseURL: API_URL,
@@ -15,3 +18,26 @@ export const apiClient = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+apiClient.interceptors.request.use(async (config) => {
+  const accessToken = await getValidAccessToken();
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
+    const session = getActiveSession();
+    if (session) {
+      config.headers['X-Tenant-Slug'] = session.slug;
+    }
+  }
+  return config;
+});
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error: unknown) => {
+    // 401 : token plus accepté → on purge la session ; l'auth gate renverra au login.
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      await signOut();
+    }
+    return Promise.reject(error);
+  },
+);
