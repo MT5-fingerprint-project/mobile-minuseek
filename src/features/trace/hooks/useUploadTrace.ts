@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { toReadableError } from '@/features/shared/lib/errors';
 import { TraceAPI } from '@/features/trace/services/traceAPI.services';
@@ -14,6 +14,8 @@ const TRACE_ERROR_MESSAGES = {
 };
 
 export function useUploadTrace() {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (trace: SelectedTrace) => {
       try {
@@ -21,6 +23,11 @@ export function useUploadTrace() {
       } catch (error) {
         throw toReadableError(error, TRACE_ERROR_MESSAGES);
       }
+    },
+    onSuccess: (_data, trace) => {
+      queryClient.invalidateQueries({
+        queryKey: traceKeys.list(trace.caseId),
+      });
     },
   });
 }

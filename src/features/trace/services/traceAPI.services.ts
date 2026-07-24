@@ -15,7 +15,7 @@ export const TraceAPI = {
 
     return apiClient
       .post<UploadedTrace>('/traces', form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 'Content-Type': undefined },
       })
       .then((res) => res.data);
   },

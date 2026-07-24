@@ -11,6 +11,8 @@ export const ACCEPTED_TRACE_MIME_TYPES = [
   'image/jpeg',
   'image/png',
   'image/tiff',
+  'image/heic',
+  'image/heif',
 ] as const;
 
 const EXTENSION_TO_MIME: Record<string, string> = {
@@ -19,6 +21,8 @@ const EXTENSION_TO_MIME: Record<string, string> = {
   png: 'image/png',
   tif: 'image/tiff',
   tiff: 'image/tiff',
+  heic: 'image/heic',
+  heif: 'image/heif',
 };
 
 function isAccepted(mimeType: string): boolean {
