@@ -1,16 +1,18 @@
 {
   "expo": {
-    "name": "mobile-minuseek",
-    "slug": "mobile-minuseek",
+    "name": "Minuseek",
+    "slug": "minuseek",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "mobileminuseek",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.minuseek.mobile"
     },
     "android": {
+      "package": "com.minuseek.mobile",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -52,6 +54,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "owner": "TODO_EAS_INIT",
+    "extra": {
+      "eas": {
+        "projectId": "TODO_EAS_INIT"
+      }
     }
   }
 }

@@ -5,17 +5,19 @@ Application mobile (iOS / Android / web) de Minuseek, construite avec
 Elle consomme l'API de `back-minuseek` et reprend les conventions UI de `front-minuseek`
 (mêmes tokens de design, mêmes features).
 
-> ⚠️ Reste en **SDK 54** : l'app cible Expo Go, dont la version publiée sur les stores
-> plafonne à SDK 54. Avant d'écrire du code, se référer à la doc versionnée :
+> ⚠️ Reste en **SDK 54** : l'Expo Go publié sur les stores plafonne à SDK 54. Avant
+> d'écrire du code, se référer à la doc versionnée :
 > https://docs.expo.dev/versions/v54.0.0/
 
 ## Prérequis
 
-- **Node.js** ≥ 20
-- **pnpm** (le repo utilise `pnpm-lock.yaml` + `.npmrc` en `node-linker=hoisted`)
+- **Node.js** 22 (la CI tourne sur 22)
+- **pnpm** 11 (le repo utilise `pnpm-lock.yaml` + `.npmrc` en `node-linker=hoisted`)
 - **back-minuseek** lancé et accessible (voir [Variables d'environnement](#variables-denvironnement))
-- Pour le natif : un simulateur iOS (Xcode) et/ou un émulateur Android (Android Studio),
-  ou l'app **Expo Go** sur un téléphone physique
+- Selon le mode de lancement (voir ci-dessous) : l'app **Expo Go** sur un téléphone,
+  ou **Android Studio** / **Xcode** pour compiler un development build
+- Pour les builds EAS : un compte [expo.dev](https://expo.dev) (gratuit) et `eas-cli`
+  (utilisable via `npx eas-cli@latest`, aucune installation globale requise)
 
 ## Démarrage
 
@@ -27,7 +29,16 @@ Elle consomme l'API de `back-minuseek` et reprend les conventions UI de `front-m
 
 2. Configurer l'environnement : créer un fichier `.env` à la racine (voir section ci-dessous).
 
-3. Lancer le serveur de développement
+3. Choisir un mode de lancement — **c'est le point important** :
+
+   | Mode                  | Quand l'utiliser                                         | Coût                 |
+   | --------------------- | -------------------------------------------------------- | -------------------- |
+   | **Expo Go**           | dev UI pur : écrans, styles, navigation, appels API      | 0 €, rien à compiler |
+   | **Development build** | **dès que du natif est en jeu** (caméra, crypto native…) | 0 € en build local   |
+
+   Expo Go ne peut charger que les modules natifs qu'Expo embarque déjà. Si tu ajoutes
+   une dépendance avec du code natif, elle **n'existera pas** dans Expo Go — il faut un
+   development build. Voir [Development build](#development-build).
 
    ```bash
    pnpm start          # = expo start, puis choisir la plateforme dans le terminal
@@ -47,6 +58,78 @@ Elle consomme l'API de `back-minuseek` et reprend les conventions UI de `front-m
    pnpm lint
    ```
 
+## Development build
+
+Le development build est **notre propre client de dev** : un Expo Go maison qui embarque
+nos modules natifs. Une fois installé sur l'appareil, il se connecte à `pnpm start`
+exactement comme le faisait Expo Go.
+
+### 1. Lier le projet à un compte Expo (une seule fois, par un humain)
+
+`eas init` ouvre un navigateur pour s'authentifier — cette étape ne peut pas être
+automatisée.
+
+```bash
+npx eas-cli@latest login
+npx eas-cli@latest init     # renseigne extra.eas.projectId + owner dans app.json
+```
+
+> Tant que ce n'est pas fait, `app.json` contient les placeholders `TODO_EAS_INIT` et
+> les commandes `eas build` échoueront.
+
+### 2. Build local — le chemin recommandé (gratuit, illimité)
+
+```bash
+npx expo run:android        # nécessite Android Studio
+npx expo run:ios            # nécessite Xcode (macOS) — simulateur
+```
+
+Aucun quota, aucune file d'attente, aucun compte Apple. C'est le chemin par défaut.
+
+### 3. Build cloud EAS
+
+Utile pour distribuer un binaire à quelqu'un qui n'a pas la toolchain native.
+Consomme le quota mensuel du free tier et passe par une file d'attente.
+
+```bash
+npx eas-cli@latest build --profile development --platform android   # APK
+npx eas-cli@latest build --profile development --platform ios       # simulateur
+```
+
+Profils définis dans `eas.json` :
+
+| Profil               | Usage                                                           |
+| -------------------- | --------------------------------------------------------------- |
+| `development`        | dev client — APK Android, simulateur iOS, **sans compte Apple** |
+| `development-device` | dev client sur **iPhone physique** — exige un compte Apple      |
+| `preview`            | build interne de recette (APK)                                  |
+| `production`         | build de publication (AAB Android), `autoIncrement` activé      |
+
+### 4. iPhone physique — le seul point payant
+
+Tester sur un iPhone réel via EAS exige un compte **Apple Developer (99 $/an)** :
+
+```bash
+npx eas-cli@latest device:create
+npx eas-cli@latest build --profile development-device --platform ios
+```
+
+Sans ce compte, contournement gratuit : ouvrir le projet dans Xcode et signer avec un
+Apple ID personnel — la signature est valable **7 jours**, à renouveler.
+Android et le simulateur iOS ne sont pas concernés.
+
+### Versioning
+
+`eas.json` utilise `appVersionSource: "remote"` : les numéros de build sont gérés par
+EAS côté serveur et `autoIncrement` est activé sur le profil `production`.
+**Ne pas incrémenter à la main.** Pour fixer un point de départ :
+
+```bash
+npx eas-cli@latest build:version:set --platform android
+```
+
+Le champ `version` d'`app.json` reste la version _marketing_, gérée manuellement.
+
 ## Variables d'environnement
 
 La config se fait via un fichier **`.env`** à la racine de `mobile-minuseek`.
@@ -65,9 +148,9 @@ Seules les variables préfixées par `EXPO_PUBLIC_` sont exposées au code de l'
 Conséquence : sur le **même WiFi** qu'une session `expo start`, un téléphone physique
 charge les données **sans rien renseigner**.
 
-| Variable               | Requis | Description                                                                 |
-| ---------------------- | ------ | --------------------------------------------------------------------------- |
-| `EXPO_PUBLIC_API_URL`  | non    | Force l'URL de base de l'API. **Doit se terminer par `/api`**. À utiliser uniquement pour un back distant / staging, ou un téléphone hors du même réseau (via `expo start --tunnel`). |
+| Variable              | Requis | Description                                                                                                                                                                           |
+| --------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `EXPO_PUBLIC_API_URL` | non    | Force l'URL de base de l'API. **Doit se terminer par `/api`**. À utiliser uniquement pour un back distant / staging, ou un téléphone hors du même réseau (via `expo start --tunnel`). |
 
 Exemple d'override dans `.env` :
 
