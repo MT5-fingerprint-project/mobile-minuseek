@@ -12,9 +12,6 @@ import { Text } from '@/features/shared/ui/text'
 // Même contrainte que le back (TENANT_SLUG_PATTERN) : minuscules, chiffres, tirets.
 const SLUG_PATTERN = /^[a-z0-9][a-z0-9-]*$/
 
-// TEMPORAIRE — erreur de type volontaire pour vérifier que la CI bloque. À revert.
-export const CI_CANARY: number = 'not a number'
-
 export default function LoginScreen() {
   const { signIn } = useAuth()
   const [slug, setSlug] = useState('')
