@@ -74,8 +74,11 @@ npx eas-cli@latest login
 npx eas-cli@latest init     # renseigne extra.eas.projectId + owner dans app.json
 ```
 
-> Tant que ce n'est pas fait, `app.json` contient les placeholders `TODO_EAS_INIT` et
-> les commandes `eas build` échoueront.
+`init` **ajoute lui-même** `extra.eas.projectId` et `owner` à `app.json` ; ces deux champs
+ne doivent pas y figurer d'avance. S'ils sont déjà présents, `eas init` considère le projet
+comme déjà lié et refuse de le reconfigurer — il faut alors les supprimer et relancer.
+
+> Tant que ce n'est pas fait, les commandes `eas build` échoueront.
 
 ### 2. Build local — le chemin recommandé (gratuit, illimité)
 

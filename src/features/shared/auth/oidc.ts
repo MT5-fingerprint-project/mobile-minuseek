@@ -22,12 +22,18 @@ const CLIENT_ID = 'minuseek-mobile';
 const SCOPES = ['openid', 'profile', 'email', 'offline_access'];
 
 /**
- * Redirect natif. En build standalone/dev → `mobileminuseek://…` (scheme d'app.json) ;
- * dans Expo Go → `exp://…`. Les deux sont autorisés côté realm dev ; en déployé seul
+ * Redirect natif. En build standalone/dev → `mobileminuseek://auth` (scheme d'app.json) ;
+ * dans Expo Go → `exp://…/--/auth`. Les deux sont autorisés côté realm dev ; en déployé seul
  * `mobileminuseek://*` l'est (fail-closed), donc l'auth déployée exige un build natif.
+ *
+ * ⚠️ Le `path` est obligatoire : sans lui, `makeRedirectUri` produit `mobileminuseek://`
+ * (ni authority ni chemin), que Keycloak 26 refuse de faire matcher le pattern
+ * `mobileminuseek://*` → « Invalid parameter: redirect_uri ». Vérifié en boîte noire :
+ * `mobileminuseek://` → 400, `mobileminuseek://auth` → page de login.
  */
 export const AUTH_REDIRECT_URI = AuthSession.makeRedirectUri({
   scheme: 'mobileminuseek',
+  path: 'auth',
 });
 
 export function realmForSlug(slug: string): string {
