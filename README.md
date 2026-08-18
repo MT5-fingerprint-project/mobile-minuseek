@@ -52,10 +52,12 @@ Elle consomme l'API de `back-minuseek` et reprend les conventions UI de `front-m
    pnpm web            # navigateur
    ```
 
-4. Lint
+4. Qualité — les trois commandes que la CI rejoue sur chaque PR
 
    ```bash
-   pnpm lint
+   pnpm lint           # ESLint (config Expo + tri des imports)
+   pnpm format         # Prettier, écriture   (pnpm format:check pour vérifier seulement)
+   pnpm typecheck      # tsc --noEmit
    ```
 
 ## Development build

@@ -1,40 +1,26 @@
-import { Image } from 'expo-image';
-import { Modal, Pressable, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Image } from 'expo-image'
+import { Modal, Pressable, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { Button } from '@/features/shared/ui/button';
-import { Text } from '@/features/shared/ui/text';
-import type { SelectedTrace } from '@/features/trace/types/trace';
+import { Button } from '@/features/shared/ui/button'
+import { Text } from '@/features/shared/ui/text'
+import type { SelectedTrace } from '@/features/trace/types/trace'
 
 type TracePreviewSheetProps = {
-  selected: SelectedTrace | null;
-  isUploading: boolean;
-  onConfirm: () => void;
-  onCancel: () => void;
-};
+  selected: SelectedTrace | null
+  isUploading: boolean
+  onConfirm: () => void
+  onCancel: () => void
+}
 
-export default function TracePreviewSheet({
-  selected,
-  isUploading,
-  onConfirm,
-  onCancel,
-}: TracePreviewSheetProps) {
-  const insets = useSafeAreaInsets();
+export default function TracePreviewSheet({ selected, isUploading, onConfirm, onCancel }: TracePreviewSheetProps) {
+  const insets = useSafeAreaInsets()
 
   return (
-    <Modal
-      visible={selected !== null}
-      animationType="slide"
-      transparent
-      onRequestClose={onCancel}
-    >
+    <Modal visible={selected !== null} animationType="slide" transparent onRequestClose={onCancel}>
       <View className="flex-1 justify-end bg-black/40">
         {/* Tap outside to dismiss (bloqué pendant l'envoi) */}
-        <Pressable
-          className="flex-1"
-          onPress={isUploading ? undefined : onCancel}
-          accessibilityLabel="Fermer"
-        />
+        <Pressable className="flex-1" onPress={isUploading ? undefined : onCancel} accessibilityLabel="Fermer" />
         <View
           className="rounded-t-3xl bg-background px-5 pt-5"
           style={{ paddingBottom: Math.max(insets.bottom, 24) + 16 }}
@@ -61,5 +47,5 @@ export default function TracePreviewSheet({
         </View>
       </View>
     </Modal>
-  );
+  )
 }

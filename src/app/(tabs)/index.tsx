@@ -1,23 +1,23 @@
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router'
+import { useState } from 'react'
+import { View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { useAuth } from '@/features/shared/auth/auth-context';
-import { Button } from '@/features/shared/ui/button';
-import { Text } from '@/features/shared/ui/text';
 import {
   InvestigationCaseCreateModal,
   InvestigationCasesList,
   useInvestigationCases,
-} from '@/features/investigation-case';
+} from '@/features/investigation-case'
+import { useAuth } from '@/features/shared/auth/auth-context'
+import { Button } from '@/features/shared/ui/button'
+import { Text } from '@/features/shared/ui/text'
 
 export default function HomeScreen() {
-  const router = useRouter();
-  const { slug, signOut } = useAuth();
-  const [isCreateOpen, setCreateOpen] = useState(false);
+  const router = useRouter()
+  const { slug, signOut } = useAuth()
+  const [isCreateOpen, setCreateOpen] = useState(false)
 
-  const { data: investigationCases = [], isPending } = useInvestigationCases();
+  const { data: investigationCases = [], isPending } = useInvestigationCases()
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom', 'left', 'right']}>
@@ -46,5 +46,5 @@ export default function HomeScreen() {
 
       <InvestigationCaseCreateModal visible={isCreateOpen} onClose={() => setCreateOpen(false)} />
     </SafeAreaView>
-  );
+  )
 }

@@ -1,7 +1,7 @@
-import * as AuthSession from 'expo-auth-session';
-import * as WebBrowser from 'expo-web-browser';
+import * as AuthSession from 'expo-auth-session'
+import * as WebBrowser from 'expo-web-browser'
 
-import { KEYCLOAK_URL } from '@/features/shared/constants/global.constants';
+import { KEYCLOAK_URL } from '@/features/shared/constants/global.constants'
 
 /**
  * Cœur OIDC du login mobile : Authorization Code + PKCE contre le realm Keycloak
@@ -14,12 +14,12 @@ import { KEYCLOAK_URL } from '@/features/shared/constants/global.constants';
 
 // Ferme proprement l'onglet d'auth au retour dans l'app (no-op sur natif, requis
 // sur web — cf. doc expo-auth-session).
-WebBrowser.maybeCompleteAuthSession();
+WebBrowser.maybeCompleteAuthSession()
 
-const CLIENT_ID = 'minuseek-mobile';
+const CLIENT_ID = 'minuseek-mobile'
 // `offline_access` → refresh token géré par la politique de session offline du realm
 // (plafond dur 7 j, ADR-0006), et non par la session SSO courte du web.
-const SCOPES = ['openid', 'profile', 'email', 'offline_access'];
+const SCOPES = ['openid', 'profile', 'email', 'offline_access']
 
 /**
  * Redirect natif. En build standalone/dev → `mobileminuseek://auth` (scheme d'app.json) ;
@@ -34,42 +34,41 @@ const SCOPES = ['openid', 'profile', 'email', 'offline_access'];
 export const AUTH_REDIRECT_URI = AuthSession.makeRedirectUri({
   scheme: 'mobileminuseek',
   path: 'auth',
-});
+})
 
 export function realmForSlug(slug: string): string {
-  return `minuseek-${slug}`;
+  return `minuseek-${slug}`
 }
 
 function issuerForSlug(slug: string): string {
-  return `${KEYCLOAK_URL}/realms/${realmForSlug(slug)}`;
+  return `${KEYCLOAK_URL}/realms/${realmForSlug(slug)}`
 }
 
 export type OidcTokens = {
-  accessToken: string;
-  refreshToken: string | null;
-  idToken: string | null;
+  accessToken: string
+  refreshToken: string | null
+  idToken: string | null
   /** Epoch (secondes) d'expiration de l'access token, ou null si non fourni. */
-  expiresAt: number | null;
-};
+  expiresAt: number | null
+}
 
 /** Levée quand l'utilisateur annule ou que le provider renvoie une erreur. */
 export class AuthFailedError extends Error {
   constructor(public readonly reason: string) {
-    super(`Authentification échouée (${reason})`);
-    this.name = 'AuthFailedError';
+    super(`Authentification échouée (${reason})`)
+    this.name = 'AuthFailedError'
   }
 }
 
 function toTokens(response: AuthSession.TokenResponse): OidcTokens {
-  const issuedAt = response.issuedAt ?? Math.floor(Date.now() / 1000);
-  const expiresAt =
-    response.expiresIn != null ? issuedAt + response.expiresIn : null;
+  const issuedAt = response.issuedAt ?? Math.floor(Date.now() / 1000)
+  const expiresAt = response.expiresIn != null ? issuedAt + response.expiresIn : null
   return {
     accessToken: response.accessToken,
     refreshToken: response.refreshToken ?? null,
     idToken: response.idToken ?? null,
     expiresAt,
-  };
+  }
 }
 
 /**
@@ -78,19 +77,17 @@ function toTokens(response: AuthSession.TokenResponse): OidcTokens {
  * `fetchDiscoveryAsync` résout les endpoints depuis `/.well-known/openid-configuration`.
  */
 export async function signInWithSlug(slug: string): Promise<OidcTokens> {
-  const discovery = await AuthSession.fetchDiscoveryAsync(issuerForSlug(slug));
+  const discovery = await AuthSession.fetchDiscoveryAsync(issuerForSlug(slug))
   const request = new AuthSession.AuthRequest({
     clientId: CLIENT_ID,
     redirectUri: AUTH_REDIRECT_URI,
     scopes: SCOPES,
     usePKCE: true,
-  });
+  })
 
-  const result = await request.promptAsync(discovery);
+  const result = await request.promptAsync(discovery)
   if (result.type !== 'success' || !result.params.code) {
-    throw new AuthFailedError(
-      result.type === 'success' ? 'code_manquant' : result.type,
-    );
+    throw new AuthFailedError(result.type === 'success' ? 'code_manquant' : result.type)
   }
 
   const tokenResponse = await AuthSession.exchangeCodeAsync(
@@ -99,37 +96,23 @@ export async function signInWithSlug(slug: string): Promise<OidcTokens> {
       code: result.params.code,
       redirectUri: AUTH_REDIRECT_URI,
       // PKCE : le verifier généré par la request prouve qu'on est bien l'initiateur.
-      extraParams: request.codeVerifier
-        ? { code_verifier: request.codeVerifier }
-        : undefined,
+      extraParams: request.codeVerifier ? { code_verifier: request.codeVerifier } : undefined,
     },
-    discovery,
-  );
+    discovery
+  )
 
-  return toTokens(tokenResponse);
+  return toTokens(tokenResponse)
 }
 
 /** Rafraîchit les tokens à partir d'un refresh token (offline token). */
-export async function refreshTokens(
-  slug: string,
-  refreshToken: string,
-): Promise<OidcTokens> {
-  const discovery = await AuthSession.fetchDiscoveryAsync(issuerForSlug(slug));
-  const tokenResponse = await AuthSession.refreshAsync(
-    { clientId: CLIENT_ID, refreshToken },
-    discovery,
-  );
-  return toTokens(tokenResponse);
+export async function refreshTokens(slug: string, refreshToken: string): Promise<OidcTokens> {
+  const discovery = await AuthSession.fetchDiscoveryAsync(issuerForSlug(slug))
+  const tokenResponse = await AuthSession.refreshAsync({ clientId: CLIENT_ID, refreshToken }, discovery)
+  return toTokens(tokenResponse)
 }
 
 /** Révoque le refresh token côté Keycloak (best-effort, pour le logout). */
-export async function revokeRefreshToken(
-  slug: string,
-  refreshToken: string,
-): Promise<void> {
-  const discovery = await AuthSession.fetchDiscoveryAsync(issuerForSlug(slug));
-  await AuthSession.revokeAsync(
-    { clientId: CLIENT_ID, token: refreshToken },
-    discovery,
-  );
+export async function revokeRefreshToken(slug: string, refreshToken: string): Promise<void> {
+  const discovery = await AuthSession.fetchDiscoveryAsync(issuerForSlug(slug))
+  await AuthSession.revokeAsync({ clientId: CLIENT_ID, token: refreshToken }, discovery)
 }

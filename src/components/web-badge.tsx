@@ -1,15 +1,15 @@
-import { version } from 'expo/package.json';
-import { Image } from 'expo-image';
-import React from 'react';
-import { useColorScheme, StyleSheet } from 'react-native';
+import { version } from 'expo/package.json'
+import { Image } from 'expo-image'
+import React from 'react'
+import { StyleSheet, useColorScheme } from 'react-native'
 
-import { ThemedText } from './themed-text';
-import { ThemedView } from './themed-view';
+import { Spacing } from '@/constants/theme'
 
-import { Spacing } from '@/constants/theme';
+import { ThemedText } from './themed-text'
+import { ThemedView } from './themed-view'
 
 export function WebBadge() {
-  const scheme = useColorScheme();
+  const scheme = useColorScheme()
 
   return (
     <ThemedView style={styles.container}>
@@ -25,7 +25,7 @@ export function WebBadge() {
         style={styles.badgeImage}
       />
     </ThemedView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -41,4 +41,4 @@ const styles = StyleSheet.create({
     width: 123,
     aspectRatio: 123 / 24,
   },
-});
+})

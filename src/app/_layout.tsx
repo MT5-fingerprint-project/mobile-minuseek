@@ -1,17 +1,17 @@
-import '@/global.css';
+import '@/global.css'
 
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Stack } from 'expo-router';
-import React from 'react';
-import { useColorScheme } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Stack } from 'expo-router'
+import React from 'react'
+import { useColorScheme } from 'react-native'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import { AuthProvider, useAuth } from '@/features/shared/auth/auth-context';
+import { AnimatedSplashOverlay } from '@/components/animated-icon'
+import { AuthProvider, useAuth } from '@/features/shared/auth/auth-context'
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient()
 
 /**
  * Auth gate : `Stack.Protected` (expo-router v6) n'expose `(tabs)` que si la session
@@ -20,8 +20,8 @@ const queryClient = new QueryClient();
  * couvre l'écran, donc `login` ne « flashe » pas pour un utilisateur déjà connecté.
  */
 function RootNavigator() {
-  const { status } = useAuth();
-  const isAuthenticated = status === 'authenticated';
+  const { status } = useAuth()
+  const isAuthenticated = status === 'authenticated'
 
   return (
     <Stack>
@@ -33,11 +33,11 @@ function RootNavigator() {
         <Stack.Screen name="login" options={{ headerShown: false }} />
       </Stack.Protected>
     </Stack>
-  );
+  )
 }
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme()
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
@@ -51,5 +51,5 @@ export default function RootLayout() {
         </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
-  );
+  )
 }

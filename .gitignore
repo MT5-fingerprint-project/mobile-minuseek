@@ -7,7 +7,10 @@ node_modules/
 .expo/
 dist/
 web-build/
-expo-env.d.ts
+# NB : `expo-env.d.ts` est volontairement versionné (il ne l'est pas dans le
+# template Expo). Rien ne le régénère sur un clone propre — ni `expo export`, ni
+# une commande `typegen` en SDK 54 — donc sans lui `tsc --noEmit` échoue en CI.
+# Son contenu est stable (une directive `/// <reference>`).
 
 # Native
 .kotlin/

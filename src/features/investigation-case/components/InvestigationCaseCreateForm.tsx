@@ -1,40 +1,38 @@
-import { View } from 'react-native';
-import { Button } from '@/features/shared/ui/button';
-import { Field, FieldError, FieldLabel } from '@/features/shared/ui/field';
-import { Input } from '@/features/shared/ui/input';
-import { Text } from '@/features/shared/ui/text';
-import { Textarea } from '@/features/shared/ui/textarea';
-import { useCreateInvestigationCaseForm } from '@/features/investigation-case/hooks/useCreateInvestigationCaseForm';
-import type { InvestigationCaseCreateInput } from '@/features/investigation-case/types/investigationCase';
+import { View } from 'react-native'
+
+import { useCreateInvestigationCaseForm } from '@/features/investigation-case/hooks/useCreateInvestigationCaseForm'
+import type { InvestigationCaseCreateInput } from '@/features/investigation-case/types/investigationCase'
+import { Button } from '@/features/shared/ui/button'
+import { Field, FieldError, FieldLabel } from '@/features/shared/ui/field'
+import { Input } from '@/features/shared/ui/input'
+import { Text } from '@/features/shared/ui/text'
+import { Textarea } from '@/features/shared/ui/textarea'
 
 type InvestigationCaseCreateFormProps = {
-  onClose: () => void;
-  onSubmit: (values: InvestigationCaseCreateInput) => Promise<unknown> | unknown;
-};
+  onClose: () => void
+  onSubmit: (values: InvestigationCaseCreateInput) => Promise<unknown> | unknown
+}
 
 export default function InvestigationCaseCreateForm({ onClose, onSubmit }: InvestigationCaseCreateFormProps) {
   const { form, submitError } = useCreateInvestigationCaseForm({
     onSubmit,
     onSuccess: onClose,
-  });
+  })
 
   return (
     <View className="gap-5">
       <View className="gap-1">
         <Text className="text-xl font-semibold">Créer une affaire</Text>
-        <Text className="text-sm text-muted-foreground">
-          Renseignez les informations de la nouvelle affaire.
-        </Text>
+        <Text className="text-sm text-muted-foreground">Renseignez les informations de la nouvelle affaire.</Text>
       </View>
 
       <View className="gap-4">
-        <form.Field
-          name="caseNumber"
-          children={(field) => {
-            const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+        <form.Field name="caseNumber">
+          {(field) => {
+            const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
             return (
               <Field>
-                <FieldLabel nativeID={field.name}>Numéro d'affaire</FieldLabel>
+                <FieldLabel nativeID={field.name}>Numéro d&apos;affaire</FieldLabel>
                 <Input
                   value={field.state.value}
                   onBlur={field.handleBlur}
@@ -46,14 +44,13 @@ export default function InvestigationCaseCreateForm({ onClose, onSubmit }: Inves
                 />
                 {isInvalid && <FieldError errors={field.state.meta.errors} />}
               </Field>
-            );
+            )
           }}
-        />
+        </form.Field>
 
-        <form.Field
-          name="pvNumber"
-          children={(field) => {
-            const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+        <form.Field name="pvNumber">
+          {(field) => {
+            const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
             return (
               <Field>
                 <FieldLabel nativeID={field.name}>Numéro du PV</FieldLabel>
@@ -68,14 +65,13 @@ export default function InvestigationCaseCreateForm({ onClose, onSubmit }: Inves
                 />
                 {isInvalid && <FieldError errors={field.state.meta.errors} />}
               </Field>
-            );
+            )
           }}
-        />
+        </form.Field>
 
-        <form.Field
-          name="description"
-          children={(field) => {
-            const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+        <form.Field name="description">
+          {(field) => {
+            const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
             return (
               <Field>
                 <FieldLabel nativeID={field.name}>Description</FieldLabel>
@@ -88,9 +84,9 @@ export default function InvestigationCaseCreateForm({ onClose, onSubmit }: Inves
                 />
                 {isInvalid && <FieldError errors={field.state.meta.errors} />}
               </Field>
-            );
+            )
           }}
-        />
+        </form.Field>
 
         {submitError && <Text className="text-sm text-destructive">{submitError}</Text>}
       </View>
@@ -99,15 +95,14 @@ export default function InvestigationCaseCreateForm({ onClose, onSubmit }: Inves
         <Button variant="outline" onPress={onClose}>
           <Text>Annuler</Text>
         </Button>
-        <form.Subscribe
-          selector={(state) => state.isSubmitting}
-          children={(isSubmitting) => (
+        <form.Subscribe selector={(state) => state.isSubmitting}>
+          {(isSubmitting) => (
             <Button loading={isSubmitting} onPress={() => form.handleSubmit()}>
               <Text>{isSubmitting ? 'Création…' : "Créer l'affaire"}</Text>
             </Button>
           )}
-        />
+        </form.Subscribe>
       </View>
     </View>
-  );
+  )
 }

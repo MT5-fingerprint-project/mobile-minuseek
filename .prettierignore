@@ -1,0 +1,10 @@
+node_modules
+.expo
+dist
+# Versionné mais régénéré par le dev server : le reformater créerait un diff
+# parasite à chaque `pnpm start`.
+expo-env.d.ts
+/ios
+/android
+pnpm-lock.yaml
+assets
