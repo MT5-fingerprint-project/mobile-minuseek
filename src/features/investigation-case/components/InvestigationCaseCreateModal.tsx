@@ -1,23 +1,24 @@
-import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import InvestigationCaseCreateForm from '@/features/investigation-case/components/InvestigationCaseCreateForm';
-import { useCreateInvestigationCase } from '@/features/investigation-case/hooks/useInvestigationCases';
-import type { InvestigationCaseCreateInput } from '@/features/investigation-case/types/investigationCase';
+import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
+import InvestigationCaseCreateForm from '@/features/investigation-case/components/InvestigationCaseCreateForm'
+import { useCreateInvestigationCase } from '@/features/investigation-case/hooks/useInvestigationCases'
+import type { InvestigationCaseCreateInput } from '@/features/investigation-case/types/investigationCase'
 
 type InvestigationCaseCreateModalProps = {
-  visible: boolean;
-  onClose: () => void;
-};
+  visible: boolean
+  onClose: () => void
+}
 
 export default function InvestigationCaseCreateModal({ visible, onClose }: InvestigationCaseCreateModalProps) {
-  const insets = useSafeAreaInsets();
-  const createCase = useCreateInvestigationCase();
+  const insets = useSafeAreaInsets()
+  const createCase = useCreateInvestigationCase()
 
   const handleSubmit = async (values: InvestigationCaseCreateInput) => {
     // Errors bubble up to the form (mutationFn rethrows a readable message).
-    await createCase.mutateAsync(values);
-    Alert.alert('Affaire créée avec succès');
-  };
+    await createCase.mutateAsync(values)
+    Alert.alert('Affaire créée avec succès')
+  }
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
@@ -39,5 +40,5 @@ export default function InvestigationCaseCreateModal({ visible, onClose }: Inves
         </KeyboardAvoidingView>
       </View>
     </Modal>
-  );
+  )
 }

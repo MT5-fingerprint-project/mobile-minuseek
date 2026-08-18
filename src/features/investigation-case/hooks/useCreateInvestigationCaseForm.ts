@@ -1,23 +1,24 @@
-import { useState } from 'react';
-import { useForm } from '@tanstack/react-form';
+import { useForm } from '@tanstack/react-form'
+import { useState } from 'react'
+
 import {
-  investigationCaseCreateSchema,
   type InvestigationCaseCreateInput,
-} from '@/features/investigation-case/types/investigationCase';
+  investigationCaseCreateSchema,
+} from '@/features/investigation-case/types/investigationCase'
 
 const DEFAULT_VALUES: InvestigationCaseCreateInput = {
   caseNumber: '',
   pvNumber: '',
   description: '',
-};
+}
 
 type UseCreateInvestigationCaseFormArgs = {
-  onSubmit: (values: InvestigationCaseCreateInput) => Promise<unknown> | unknown;
-  onSuccess?: () => void;
-};
+  onSubmit: (values: InvestigationCaseCreateInput) => Promise<unknown> | unknown
+  onSuccess?: () => void
+}
 
 export function useCreateInvestigationCaseForm({ onSubmit, onSuccess }: UseCreateInvestigationCaseFormArgs) {
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const form = useForm({
     defaultValues: DEFAULT_VALUES,
@@ -26,15 +27,15 @@ export function useCreateInvestigationCaseForm({ onSubmit, onSuccess }: UseCreat
     },
     onSubmit: async ({ value }) => {
       try {
-        setSubmitError(null);
-        await onSubmit(value);
-        form.reset();
-        onSuccess?.();
+        setSubmitError(null)
+        await onSubmit(value)
+        form.reset()
+        onSuccess?.()
       } catch (error) {
-        setSubmitError(error instanceof Error ? error.message : 'Une erreur est survenue');
+        setSubmitError(error instanceof Error ? error.message : 'Une erreur est survenue')
       }
     },
-  });
+  })
 
-  return { form, submitError };
+  return { form, submitError }
 }

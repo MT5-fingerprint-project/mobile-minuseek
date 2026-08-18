@@ -1,74 +1,60 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from 'react';
+import { createContext, type ReactNode, useContext, useEffect, useState } from 'react'
 
-import {
-  restoreSession,
-  signIn as sessionSignIn,
-  signOut as sessionSignOut,
-} from './session';
+import { restoreSession, signIn as sessionSignIn, signOut as sessionSignOut } from './session'
 
 /**
  * Pont entre le cœur impératif (`session.ts`) et React : expose l'état d'auth et les
  * actions à l'UI (écran login, auth gate). Miroir de l'`auth-context` du front web.
  */
 
-type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
+type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated'
 
 type AuthContextValue = {
-  status: AuthStatus;
-  slug: string | null;
-  signIn: (slug: string) => Promise<void>;
-  signOut: () => Promise<void>;
-};
+  status: AuthStatus
+  slug: string | null
+  signIn: (slug: string) => Promise<void>
+  signOut: () => Promise<void>
+}
 
-const AuthContext = createContext<AuthContextValue | null>(null);
+const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function useAuth(): AuthContextValue {
-  const context = useContext(AuthContext);
+  const context = useContext(AuthContext)
   if (!context) {
-    throw new Error('useAuth doit être utilisé dans un AuthProvider');
+    throw new Error('useAuth doit être utilisé dans un AuthProvider')
   }
-  return context;
+  return context
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [status, setStatus] = useState<AuthStatus>('loading');
-  const [slug, setSlug] = useState<string | null>(null);
+  const [status, setStatus] = useState<AuthStatus>('loading')
+  const [slug, setSlug] = useState<string | null>(null)
 
   useEffect(() => {
-    let isMounted = true;
+    let isMounted = true
     void restoreSession().then((session) => {
       if (!isMounted) {
-        return;
+        return
       }
-      setSlug(session?.slug ?? null);
-      setStatus(session ? 'authenticated' : 'unauthenticated');
-    });
+      setSlug(session?.slug ?? null)
+      setStatus(session ? 'authenticated' : 'unauthenticated')
+    })
     return () => {
-      isMounted = false;
-    };
-  }, []);
+      isMounted = false
+    }
+  }, [])
 
   async function signIn(targetSlug: string): Promise<void> {
-    const session = await sessionSignIn(targetSlug);
-    setSlug(session.slug);
-    setStatus('authenticated');
+    const session = await sessionSignIn(targetSlug)
+    setSlug(session.slug)
+    setStatus('authenticated')
   }
 
   async function signOut(): Promise<void> {
-    await sessionSignOut();
-    setSlug(null);
-    setStatus('unauthenticated');
+    await sessionSignOut()
+    setSlug(null)
+    setStatus('unauthenticated')
   }
 
-  return (
-    <AuthContext.Provider value={{ status, slug, signIn, signOut }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ status, slug, signIn, signOut }}>{children}</AuthContext.Provider>
 }
