@@ -169,6 +169,26 @@ EXPO_PUBLIC_API_URL=http://192.168.1.10:3000/api
 > Note : les variables `EXPO_PUBLIC_*` sont **inlinées dans le bundle** au build —
 > n'y mettre aucun secret. Après modification du `.env`, relancer avec `expo start -c`.
 
+## Intégration continue
+
+`.github/workflows/ci.yml` rejoue `pnpm lint`, `pnpm format:check` et `pnpm typecheck`
+sur chaque push et chaque PR vers `main` (Node 22 / pnpm 11).
+
+### Fichiers de types générés
+
+Deux fichiers de types sont écrits par le dev server et donc absents d'un clone propre.
+Le SDK 54 n'expose aucune commande `expo typegen`, et `expo export` ne les produit pas
+non plus (vérifié).
+
+- **`expo-env.d.ts` est volontairement versionné** (retiré du `.gitignore`, contrairement
+  au template Expo). Sans lui, `tsc --noEmit` échoue en CI sur les imports `*.module.css`
+  alors qu'il passe en local. Son contenu est une simple directive `/// <reference>`,
+  stable dans le temps ; il est dans `.prettierignore` car le dev server le réécrit.
+- **`.expo/types/router.d.ts` n'est pas reconstitué en CI.** Il porte le typage strict des
+  routes (`experiments.typedRoutes`). Conséquence assumée : sur un clone propre `tsc` est
+  plus permissif qu'en local — une route invalide passe la CI. En local elle est bien
+  détectée, dès le premier `pnpm start`. À revoir si Expo expose un jour un typegen.
+
 ## Architecture
 
 ### Stack technique
