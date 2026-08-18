@@ -24,6 +24,16 @@ export type SelectedTrace = {
   caseId: string
   mimeType: string
   fileName: string
+  /**
+   * Renseignés par la capture custom uniquement ; ignorés par le chemin galerie.
+   * `TraceAPI.upload` déstructure explicitement les 4 champs ci-dessus : aucun de ces
+   * champs ne peut fuiter dans le `FormData` (le back rejette tout champ inconnu).
+   * Ils préparent le ticket back « Métadonnées de capture sur POST /traces ».
+   */
+  source?: 'camera' | 'library'
+  width?: number
+  height?: number
+  exif?: Record<string, unknown>
 }
 
 export const ACCEPTED_TRACE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/tiff', 'image/heic', 'image/heif'] as const

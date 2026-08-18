@@ -8,13 +8,12 @@
     "scheme": "mobileminuseek",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon",
       "bundleIdentifier": "com.minuseek.mobile"
     },
     "android": {
       "package": "com.minuseek.mobile",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#010516",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -39,10 +38,10 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#010516",
           "android": {
             "image": "./assets/images/splash-icon.png",
-            "imageWidth": 76
+            "imageWidth": 120
           }
         }
       ],
@@ -56,6 +55,14 @@
         "expo-media-library",
         {
           "savePhotosPermission": "L'application a besoin d'enregistrer les photos dans votre galerie."
+        }
+      ],
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "L'application a besoin de l'accès à la caméra pour photographier les traces d'une affaire.",
+          "enableMicrophonePermission": false,
+          "enableFrameProcessors": false
         }
       ],
       "expo-secure-store"

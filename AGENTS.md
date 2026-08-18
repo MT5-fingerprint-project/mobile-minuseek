@@ -14,3 +14,9 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v54.0.0/ before 
 >
 > Concrètement : si ton changement touche au natif, il ne sera **pas** testable dans
 > Expo Go. Voir la section « Development build » du README.
+>
+> ⚠️ **La caméra custom (B1) est en place** : `react-native-vision-camera` est désormais
+> une dépendance native de l'app. Un development build **déjà installé ne la contient pas**
+> — il faut le **recompiler** (`pnpm install && rm -rf android && npx expo run:android`),
+> sinon l'écran `/capture/[caseId]` plante au montage. Dans Expo Go, le bouton
+> « Prendre une photo » retombe sur l'UI caméra système.
