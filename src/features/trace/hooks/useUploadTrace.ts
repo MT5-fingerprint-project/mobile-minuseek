@@ -1,13 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { toReadableError } from '@/features/shared/lib/errors'
+import { traceKeys } from '@/features/trace/hooks/traceKeys'
 import { TraceAPI } from '@/features/trace/services/traceAPI.services'
 import type { SelectedTrace } from '@/features/trace/types/trace'
-
-export const traceKeys = {
-  all: ['traces'] as const,
-  list: (caseId: string) => [...traceKeys.all, 'list', caseId] as const,
-}
 
 const TRACE_ERROR_MESSAGES = {
   404: "Cette affaire est introuvable ou n'accepte pas de trace.",

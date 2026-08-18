@@ -14,11 +14,30 @@ const CASE_ERROR_MESSAGES = {
   409: 'Une affaire avec ce numéro existe déjà.',
 }
 
+const CASE_DETAIL_ERROR_MESSAGES = {
+  404: 'Cette affaire est introuvable.',
+}
+
 export function useInvestigationCases() {
   return useQuery({
     queryKey: investigationCaseKeys.lists(),
     queryFn: () => InvestigationCaseAPI.getAll(),
     select: ({ data }) => data,
+  })
+}
+
+export function useInvestigationCase(id: string | undefined) {
+  return useQuery({
+    queryKey: investigationCaseKeys.detail(id ?? ''),
+    queryFn: async () => {
+      if (!id) throw new Error('Cette affaire est introuvable.')
+      try {
+        return await InvestigationCaseAPI.getById(id)
+      } catch (error) {
+        throw toReadableError(error, CASE_DETAIL_ERROR_MESSAGES)
+      }
+    },
+    enabled: Boolean(id),
   })
 }
 

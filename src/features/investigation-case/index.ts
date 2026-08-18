@@ -3,9 +3,11 @@ export { default as InvestigationCaseCard } from '@/features/investigation-case/
 export { default as InvestigationCaseCreateForm } from '@/features/investigation-case/components/InvestigationCaseCreateForm'
 export { default as InvestigationCaseCreateModal } from '@/features/investigation-case/components/InvestigationCaseCreateModal'
 export { default as InvestigationCasesList } from '@/features/investigation-case/components/InvestigationCasesList'
+export { default as InvestigationCaseSummary } from '@/features/investigation-case/components/InvestigationCaseSummary'
 export {
   investigationCaseKeys,
   useCreateInvestigationCase,
+  useInvestigationCase,
   useInvestigationCases,
 } from '@/features/investigation-case/hooks/useInvestigationCases'
 export {

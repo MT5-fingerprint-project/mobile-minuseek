@@ -1,5 +1,24 @@
 import type { ImagePickerAsset } from 'expo-image-picker'
 
+/**
+ * Statuts réels du back (`prisma/models/trace.prisma`). Le type du front web est périmé.
+ * Le rendu doit rester tolérant à une valeur inconnue (nouveau statut déployé côté back).
+ */
+export const TRACE_STATUSES = ['RECEIVED', 'EXPLOITABLE', 'NOT_EXPLOITABLE'] as const
+export type TraceStatus = (typeof TRACE_STATUSES)[number]
+
+/** Une trace déjà envoyée, telle que `GET /traces?caseId=…` la renvoie. */
+export type Trace = {
+  id: string
+  path: string
+  url: string
+  status: TraceStatus
+  score: number | null
+  caseId: string
+  createdAt: string
+}
+
+/** Une image choisie sur l'appareil, pas encore envoyée. */
 export type SelectedTrace = {
   uri: string
   caseId: string

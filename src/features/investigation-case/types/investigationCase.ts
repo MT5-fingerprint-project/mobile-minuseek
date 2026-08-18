@@ -5,7 +5,7 @@ export type InvestigationCaseStatus = z.infer<typeof investigationCaseStatusSche
 
 export interface InvestigationCase {
   id: string
-  description?: string | undefined
+  description: string | null
   caseNumber: string
   pvNumber: string
   status: InvestigationCaseStatus
