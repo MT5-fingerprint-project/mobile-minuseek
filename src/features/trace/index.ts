@@ -9,6 +9,7 @@ export { useDeleteTrace } from './hooks/useDeleteTrace'
 export { usePickImageForCase } from './hooks/usePickImageForCase'
 export { useTraces } from './hooks/useTraces'
 export { useUploadTrace } from './hooks/useUploadTrace'
+export { buildCapturedTrace, type CapturedPhoto } from './lib/buildCapturedTrace'
 export {
   ACCEPTED_TRACE_MIME_TYPES,
   buildSelectedTrace,

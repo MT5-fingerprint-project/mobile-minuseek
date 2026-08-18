@@ -1,4 +1,5 @@
-import { Stack, useLocalSearchParams } from 'expo-router'
+import Constants, { ExecutionEnvironment } from 'expo-constants'
+import { router, Stack, useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
 import { Alert, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -18,6 +19,13 @@ import {
   useUploadTrace,
 } from '@/features/trace'
 
+/**
+ * La capture guidée (viseur custom) embarque un module natif : elle n'existe pas dans
+ * l'Expo Go des stores. On y retombe alors sur l'UI caméra système — filet de sécurité
+ * assumé, à retirer une fois le development build généralisé.
+ */
+const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient
+
 export default function CaseScreen() {
   const { id: caseId } = useLocalSearchParams<{ id: string }>()
   // Deux objets distincts : `selected` est une image locale pas encore envoyée,
@@ -31,6 +39,14 @@ export default function CaseScreen() {
   const { takePhoto } = useCaptureTraceForCase(caseId)
   const { pickImage } = usePickImageForCase(caseId)
   const upload = useUploadTrace()
+
+  const handleTakePhoto = async () => {
+    if (isExpoGo) {
+      setSelected(await takePhoto())
+      return
+    }
+    router.push({ pathname: '/capture/[caseId]', params: { caseId } })
+  }
 
   const handleConfirm = async () => {
     if (!selected) return
@@ -74,7 +90,7 @@ export default function CaseScreen() {
       />
 
       <View className="flex-row gap-3 border-t border-border bg-background px-5 py-3">
-        <Button className="flex-1" onPress={async () => setSelected(await takePhoto())}>
+        <Button className="flex-1" onPress={handleTakePhoto}>
           <Text>Prendre une photo</Text>
         </Button>
         <Button variant="outline" className="flex-1" onPress={async () => setSelected(await pickImage())}>

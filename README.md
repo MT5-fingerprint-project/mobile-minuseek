@@ -31,10 +31,10 @@ Elle consomme l'API de `back-minuseek` et reprend les conventions UI de `front-m
 
 3. Choisir un mode de lancement — **c'est le point important** :
 
-   | Mode                  | Quand l'utiliser                                         | Coût                 |
-   | --------------------- | -------------------------------------------------------- | -------------------- |
-   | **Expo Go**           | dev UI pur : écrans, styles, navigation, appels API      | 0 €, rien à compiler |
-   | **Development build** | **dès que du natif est en jeu** (caméra, crypto native…) | 0 € en build local   |
+   | Mode                  | Quand l'utiliser                                                            | Coût                 |
+   | --------------------- | --------------------------------------------------------------------------- | -------------------- |
+   | **Expo Go**           | dev UI pur : écrans, styles, navigation, appels API                         | 0 €, rien à compiler |
+   | **Development build** | **dès que du natif est en jeu** — dont la **capture guidée** (`/capture/…`) | 0 € en build local   |
 
    Expo Go ne peut charger que les modules natifs qu'Expo embarque déjà. Si tu ajoutes
    une dépendance avec du code natif, elle **n'existera pas** dans Expo Go — il faut un
@@ -65,6 +65,36 @@ Elle consomme l'API de `back-minuseek` et reprend les conventions UI de `front-m
 Le development build est **notre propre client de dev** : un Expo Go maison qui embarque
 nos modules natifs. Une fois installé sur l'appareil, il se connecte à `pnpm start`
 exactement comme le faisait Expo Go.
+
+### Modules natifs embarqués
+
+| Module                                   | Utilisé par                                              |
+| ---------------------------------------- | -------------------------------------------------------- |
+| `react-native-vision-camera` (**4.7.3**) | viseur custom de la capture guidée (`/capture/[caseId]`) |
+| `expo-image-picker`                      | import galerie, et repli caméra système en Expo Go       |
+| `expo-media-library`                     | enregistrement d'une copie locale                        |
+| `expo-secure-store`                      | stockage de session                                      |
+| `expo-file-system`                       | poids du fichier affiché dans l'aperçu                   |
+
+> **Pourquoi VisionCamera est figé en 4.7.3** : la 5.x (Nitro) compile sur RN 0.81 mais
+> plante au montage de la vue (`SIGABRT`, `RawValue.h: castValue: assertion failed`). Elle
+> passe ses props natives en valeurs JSI brutes, ce que le renderer de RN 0.81 ne sait lire
+> qu'avec le feature flag `useRawPropsJsiValue`, désactivé par défaut. Ne pas remonter de
+> version tant qu'on est en SDK 54 / RN 0.81.
+>
+> Les frame processors sont désactivés (`enableFrameProcessors: false`) : ils imposeraient
+> `react-native-worklets-core`, dont le runtime worklets est distinct de celui de
+> Reanimated 4. C'est l'arbitrage du ticket « contrôles qualité on-device ».
+
+> ⚠️ **Après tout ajout de module natif — dont la capture guidée — un dev client déjà
+> installé ne suffit plus : il faut le recompiler.** Sinon l'écran plante au montage,
+> faute du module côté natif. C'est le premier faux bug à écarter.
+>
+> ```bash
+> pnpm install
+> rm -rf android            # dossier généré (gitignoré) : `prebuild` le régénère
+> npx expo run:android
+> ```
 
 ### 1. Lier le projet à un compte Expo (une seule fois, par un humain)
 
@@ -134,6 +164,30 @@ npx eas-cli@latest build:version:set --platform android
 ```
 
 Le champ `version` d'`app.json` reste la version _marketing_, gérée manuellement.
+
+## Capture guidée
+
+Route `/capture/[caseId]` — viseur **custom** en plein écran, ouvert depuis « Prendre une
+photo » sur l'écran affaire. Remplace l'UI caméra système, qui ne donnait accès ni au flux
+vidéo, ni à un overlay, ni au choix de la résolution.
+
+- **Overlay** : cadre de composition, zone utile (marge absorbant le redressement à venir),
+  bande de pose de la règle millimétrée. Les guides sont **statiques** : B1 ne fait aucune
+  analyse d'image temps réel.
+- **Calage viseur ↔ photo** : le conteneur est contraint au ratio du capteur (portrait 3:4)
+  et la capture est forcée sur le plus grand format **4:3** de l'appareil. Le passage
+  viseur → photo est donc une homothétie pure, et les rectangles normalisés de
+  `features/capture/lib/captureFrame.ts` sont exploitables tels quels en coordonnées photo.
+- **Seuils de résolution** (`features/capture/lib/captureResolution.ts`) : cible 500 dpi sur
+  une scène de ~60 mm, soit 60 × (500 / 25,4) ≈ 1 181 px utiles pour un cadre occupant 80 %
+  du petit côté → **1536 px** minimum sur le petit côté (et 3 Mpx), sous lesquels la photo est
+  **refusée** ; **2448 px** recommandés (marge pour le crop et le redressement), sous lesquels
+  un bandeau ambre s'affiche sans bloquer l'envoi. Ces seuils ne s'appliquent **pas** au
+  chemin galerie.
+- **Zoom volontairement désactivé** : le zoom numérique ne change ni `width` ni `height` mais
+  détruit du détail réel — il permettrait de passer le contrôle de résolution sans le mériter.
+- **Repli Expo Go** : la capture guidée embarquant un module natif, elle n'existe pas dans
+  l'Expo Go des stores ; le bouton y retombe sur l'UI caméra système.
 
 ## Variables d'environnement
 
@@ -219,6 +273,9 @@ src/
 ├── hooks/                    # Hooks transverses (use-color-scheme, use-theme, …)
 │
 ├── features/                 # Code métier, découpé par domaine (mirroir du front)
+│   ├── capture/              #   Viseur guidé : géométrie de l'overlay, seuils de
+│   │                         #   résolution, wrapper de la bibliothèque caméra
+│   ├── trace/                #   Traces d'une affaire : import, aperçu, envoi, grille
 │   ├── investigation-case/   #   Domaine "affaires d'investigation"
 │   │   ├── components/        #     UI : Card, List, StatusBadge, CreateForm, CreateModal
 │   │   ├── hooks/             #     useInvestigationCases (query) + useCreateInvestigationCase

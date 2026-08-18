@@ -28,6 +28,16 @@ function RootNavigator() {
       <Stack.Protected guard={isAuthenticated}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="case/[id]" options={{ title: 'Affaire' }} />
+        {/* Capture guidée : plein écran, sans en-tête, verrouillée en portrait comme l'overlay. */}
+        <Stack.Screen
+          name="capture/[caseId]"
+          options={{
+            headerShown: false,
+            presentation: 'fullScreenModal',
+            animation: 'slide_from_bottom',
+            orientation: 'portrait',
+          }}
+        />
       </Stack.Protected>
       <Stack.Protected guard={!isAuthenticated}>
         <Stack.Screen name="login" options={{ headerShown: false }} />
