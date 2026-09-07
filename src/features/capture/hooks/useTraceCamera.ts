@@ -88,12 +88,20 @@ export function useCapturePermission(): CapturePermission {
 }
 
 /**
+ * Usage visé par une prise de vue. Il ne change pas la session caméra, seulement le contrôle
+ * appliqué à la photo : le gros plan d'une trace est mesuré, le plan large de l'endroit ne
+ * l'est pas (cf. `takePicture`).
+ */
+export type CapturePurpose = 'trace' | 'location'
+
+/**
  * Résultat d'une prise de vue. `file` est `null` quand la résolution est refusée : le
  * fichier temporaire écrit par la caméra est alors supprimé, et seul `check.message`
- * est à afficher.
+ * est à afficher. `check` vaut `null` quand aucun seuil ne s'applique — `file` est alors
+ * toujours renseigné.
  */
 export type CaptureResult = {
-  check: ResolutionCheck
+  check: ResolutionCheck | null
   file: CapturedPhotoFile | null
 }
 
@@ -115,7 +123,7 @@ export type TraceCamera = {
   /** Dernier point touché, pour l'indicateur de mise au point ; effacé après coup. */
   focusPoint: Point | null
   focusTo: (point: Point) => Promise<void>
-  takePicture: () => Promise<CaptureResult>
+  takePicture: (purpose?: CapturePurpose) => Promise<CaptureResult>
   handleInitialized: () => void
   handleError: (error: Error) => void
 }
@@ -197,13 +205,21 @@ export function useTraceCamera(): TraceCamera {
     return () => clearTimeout(timeout)
   }, [focusPoint])
 
-  const takePicture = useCallback(async (): Promise<CaptureResult> => {
+  const takePicture = useCallback(async (purpose: CapturePurpose = 'trace'): Promise<CaptureResult> => {
     const camera = cameraRef.current
     if (camera == null) throw new Error("La caméra n'est pas prête.")
 
     setIsCapturing(true)
     try {
       const photo = await camera.takePhoto({ flash: 'off' })
+      const file = { path: photo.path, width: photo.width, height: photo.height, mimeType: 'image/jpeg' }
+
+      // Aucun seuil sur un plan large : les 1 536 px du petit côté visent 500 dpi sur une
+      // scène de 60 mm, c'est-à-dire un gros plan. Sur une pièce photographiée à deux mètres
+      // ce chiffre ne veut rien dire, et refuser un plan large parfaitement lisible ferait
+      // perdre l'information au lieu de la protéger. Rien n'est donc mesuré ni supprimé ici.
+      if (purpose === 'location') return { check: null, file }
+
       const check = evaluateCaptureResolution(photo.width, photo.height)
       if (check.verdict === 'rejected') {
         // La v4 écrit toujours le fichier : une photo refusée doit être nettoyée,
@@ -215,7 +231,7 @@ export function useTraceCamera(): TraceCamera {
         }
         return { check, file: null }
       }
-      return { check, file: { path: photo.path, width: photo.width, height: photo.height, mimeType: 'image/jpeg' } }
+      return { check, file }
     } finally {
       setIsCapturing(false)
     }

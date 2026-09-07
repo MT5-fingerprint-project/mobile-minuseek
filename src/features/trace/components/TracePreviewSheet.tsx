@@ -15,6 +15,12 @@ type TracePreviewSheetProps = {
   onCancel: () => void
   /** Avertissement non bloquant (résolution sous la valeur recommandée) : bandeau ambre. */
   warning?: string | null
+  /**
+   * Ouvre l'étape de localisation (L4-3c). Absent sur les chemins de repli — import depuis
+   * la galerie, caméra système de l'Expo Go des stores — qui envoient la trace seule : la
+   * feuille garde alors ses deux boutons « Envoyer » / « Annuler ».
+   */
+  onAddLocation?: () => void
 }
 
 /**
@@ -43,6 +49,7 @@ export default function TracePreviewSheet({
   onConfirm,
   onCancel,
   warning = null,
+  onAddLocation,
 }: TracePreviewSheetProps) {
   const insets = useSafeAreaInsets()
   const fileDescription = useMemo(() => describeFile(selected), [selected])
@@ -74,8 +81,19 @@ export default function TracePreviewSheet({
             </View>
           )}
           <View className="mt-5 gap-3">
-            <Button onPress={onConfirm} loading={isUploading} disabled={isUploading}>
-              <Text>Envoyer</Text>
+            {onAddLocation && (
+              <Button onPress={onAddLocation} disabled={isUploading}>
+                <Text>Ajouter la localisation</Text>
+              </Button>
+            )}
+            {/* Sans étape de localisation, l'envoi reste l'action principale. */}
+            <Button
+              variant={onAddLocation ? 'secondary' : 'default'}
+              onPress={onConfirm}
+              loading={isUploading}
+              disabled={isUploading}
+            >
+              <Text>{onAddLocation ? 'Envoyer sans localisation' : 'Envoyer'}</Text>
             </Button>
             <Button variant="outline" onPress={onCancel} disabled={isUploading}>
               <Text>Annuler</Text>
