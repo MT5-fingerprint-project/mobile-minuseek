@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { View } from 'react-native'
+import { ScrollView, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { useAuth } from '@/features/shared/auth/auth-context'
@@ -7,6 +7,7 @@ import { AuthFailedError } from '@/features/shared/auth/oidc'
 import { Button } from '@/features/shared/ui/button'
 import { Field, FieldLabel } from '@/features/shared/ui/field'
 import { Input } from '@/features/shared/ui/input'
+import { KeyboardAvoidingView } from '@/features/shared/ui/keyboard-avoiding-view'
 import { Text } from '@/features/shared/ui/text'
 
 // Même contrainte que le back (TENANT_SLUG_PATTERN) : minuscules, chiffres, tirets.
@@ -46,34 +47,45 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <View className="flex-1 justify-center gap-6 px-6">
-        <View className="gap-2">
-          <Text className="text-2xl font-bold">Connexion</Text>
-          <Text className="text-muted-foreground">
-            Renseigne l&apos;identifiant de ton organisation pour continuer.
-          </Text>
-        </View>
+      {/* Le contenu est centré : la marge du clavier rétrécit la zone disponible, et le
+          formulaire remonte de lui-même. Le ScrollView prend le relais quand l'écran est
+          trop court pour tout afficher au-dessus du clavier. */}
+      <KeyboardAvoidingView className="flex-1">
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View className="gap-6 px-6">
+            <View className="gap-2">
+              <Text className="text-2xl font-bold">Connexion</Text>
+              <Text className="text-muted-foreground">
+                Renseigne l&apos;identifiant de ton organisation pour continuer.
+              </Text>
+            </View>
 
-        <Field>
-          <FieldLabel>Organisation</FieldLabel>
-          <Input
-            value={slug}
-            onChangeText={setSlug}
-            placeholder="ex. tenant-demo"
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoComplete="off"
-            editable={!isSubmitting}
-            returnKeyType="go"
-            onSubmitEditing={() => void handleSubmit()}
-          />
-          {error ? <Text className="text-sm text-destructive">{error}</Text> : null}
-        </Field>
+            <Field>
+              <FieldLabel>Organisation</FieldLabel>
+              <Input
+                value={slug}
+                onChangeText={setSlug}
+                placeholder="ex. tenant-demo"
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="off"
+                editable={!isSubmitting}
+                returnKeyType="go"
+                onSubmitEditing={() => void handleSubmit()}
+              />
+              {error ? <Text className="text-sm text-destructive">{error}</Text> : null}
+            </Field>
 
-        <Button onPress={() => void handleSubmit()} disabled={!canSubmit} loading={isSubmitting}>
-          <Text>Se connecter</Text>
-        </Button>
-      </View>
+            <Button onPress={() => void handleSubmit()} disabled={!canSubmit} loading={isSubmitting}>
+              <Text>Se connecter</Text>
+            </Button>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   )
 }
