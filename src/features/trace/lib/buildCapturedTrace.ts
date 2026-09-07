@@ -1,3 +1,5 @@
+import * as Device from 'expo-device'
+
 import type { SelectedTrace } from '@/features/trace/types/trace'
 
 /**
@@ -30,13 +32,18 @@ function extensionOf(mimeType: string): string {
  */
 export function buildCapturedTrace(photo: CapturedPhoto, caseId: string): SelectedTrace {
   const mimeType = photo.mimeType ?? 'image/jpeg'
+  const capturedAt = new Date()
   return {
     uri: toFileUri(photo.path),
     caseId,
     mimeType,
-    fileName: `trace-${Date.now()}.${extensionOf(mimeType)}`,
+    fileName: `trace-${capturedAt.getTime()}.${extensionOf(mimeType)}`,
     source: 'camera',
     width: photo.width,
     height: photo.height,
+    // La caméra ne rend pas l'EXIF de prise de vue : on horodate au moment où la photo
+    // arrive ici, à quelques millisecondes du déclenchement.
+    capturedAt: capturedAt.toISOString(),
+    deviceModel: Device.modelName ?? undefined,
   }
 }

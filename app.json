@@ -62,10 +62,16 @@
         {
           "cameraPermissionText": "L'application a besoin de l'accès à la caméra pour photographier les traces d'une affaire.",
           "enableMicrophonePermission": false,
-          "enableFrameProcessors": false
+          "enableFrameProcessors": true
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "L'application lit les capteurs de mouvement pour indiquer si l'appareil est d'aplomb face à la trace."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

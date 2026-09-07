@@ -36,8 +36,15 @@ export const SCALE_GUIDE: NormalizedRect = { x: 0.1, y: 0.72, width: 0.8, height
 /** Nombre de graduations dessinées sur le repère d'échelle (bornes incluses). */
 export const SCALE_GUIDE_TICKS = 21
 
-/** Rectangle utile : `COMPOSITION_FRAME` rogné de `SAFE_AREA_INSET_RATIO` sur chaque bord. */
+/**
+ * Rectangle utile : `COMPOSITION_FRAME` rogné de `SAFE_AREA_INSET_RATIO` sur chaque bord.
+ *
+ * `'worklet'` : appelée depuis le frame processor de `useTraceCamera` (B2), donc compilée
+ * pour le runtime worklet. Hors worklet la directive est inerte — la fonction reste une
+ * fonction ordinaire, utilisable telle quelle par le rendu.
+ */
 export function safeAreaOf(frame: NormalizedRect = COMPOSITION_FRAME): NormalizedRect {
+  'worklet'
   const insetX = frame.width * SAFE_AREA_INSET_RATIO
   const insetY = frame.height * SAFE_AREA_INSET_RATIO
   return {
@@ -50,6 +57,7 @@ export function safeAreaOf(frame: NormalizedRect = COMPOSITION_FRAME): Normalize
 
 /** Projette un rectangle normalisé sur une surface de `width` × `height` pixels. */
 export function toPixels(rect: NormalizedRect, width: number, height: number): PixelRect {
+  'worklet'
   return {
     x: rect.x * width,
     y: rect.y * height,

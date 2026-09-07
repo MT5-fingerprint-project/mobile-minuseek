@@ -27,6 +27,9 @@ import {
  * plante au montage de la vue : ses props sont passées en valeurs JSI brutes, ce que le
  * renderer de RN 0.81 ne sait pas lire sans le feature flag `useRawPropsJsiValue`
  * (`RawValue.h: castValue: assertion failed`). La v4 n'utilise pas ce mécanisme.
+ *
+ * L'analyse des images du viseur ne vit **pas** ici : c'est `useCaptureSignals`, pour ne pas
+ * étendre encore la surface de ce fichier. Il ne reste ici que la session caméra.
  */
 
 /** Photo capturée, réduite à ce dont le reste de l'app a besoin. */
@@ -120,6 +123,14 @@ export type TraceCamera = {
 /** Durée d'affichage de l'indicateur de mise au point, en ms. */
 const FOCUS_INDICATOR_MS = 1200
 
+/**
+ * Définition demandée pour le flux d'analyse (`useCaptureSignals`) — sans effet sur la
+ * définition de la photo. **4:3, comme tout le reste du viseur** : un 16:9 ici ferait diverger
+ * le repère des images analysées de celui de la photo, et les rectangles de `captureFrame.ts`
+ * ne vaudraient plus pour les deux.
+ */
+const ANALYSIS_VIDEO_RESOLUTION = { width: 1280, height: 960 }
+
 export function useTraceCamera(): TraceCamera {
   const cameraRef = useRef<Camera | null>(null)
   const device = useCameraDevice('back')
@@ -134,6 +145,10 @@ export function useTraceCamera(): TraceCamera {
     { photoAspectRatio: 4 / 3 },
     { videoAspectRatio: 4 / 3 },
     { photoResolution: 'max' },
+    // En dernier, donc jamais au détriment des trois filtres ci-dessus : le flux vidéo ne
+    // sert qu'à l'analyse du viseur, une définition modeste suffit et divise d'autant le
+    // coût de chaque image. La photo, elle, ne perd pas un pixel.
+    { videoResolution: ANALYSIS_VIDEO_RESOLUTION },
   ])
 
   const [isReady, setIsReady] = useState(false)

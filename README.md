@@ -71,6 +71,7 @@ exactement comme le faisait Expo Go.
 | Module                                   | Utilisé par                                              |
 | ---------------------------------------- | -------------------------------------------------------- |
 | `react-native-vision-camera` (**4.7.3**) | viseur custom de la capture guidée (`/capture/[caseId]`) |
+| `react-native-worklets-core` (**1.6.3**) | frame processors : analyse de netteté temps réel (B2)    |
 | `expo-image-picker`                      | import galerie, et repli caméra système en Expo Go       |
 | `expo-media-library`                     | enregistrement d'une copie locale                        |
 | `expo-secure-store`                      | stockage de session                                      |
@@ -82,9 +83,29 @@ exactement comme le faisait Expo Go.
 > qu'avec le feature flag `useRawPropsJsiValue`, désactivé par défaut. Ne pas remonter de
 > version tant qu'on est en SDK 54 / RN 0.81.
 >
-> Les frame processors sont désactivés (`enableFrameProcessors: false`) : ils imposeraient
-> `react-native-worklets-core`, dont le runtime worklets est distinct de celui de
-> Reanimated 4. C'est l'arbitrage du ticket « contrôles qualité on-device ».
+> **Frame processors : activés** (`enableFrameProcessors: true`). Ils imposent
+> `react-native-worklets-core`, dont le runtime de worklets est **distinct** de celui de
+> Reanimated 4 (`react-native-worklets`). Les deux cohabitent dans l'app, et c'est vérifié :
+> `libVisionCamera.so` est lié à `librnworklets.so`, les deux `.so` sont dans l'APK.
+>
+> **Deux greffons Babel se disputent la directive `'worklet'`, et c'est sans conséquence.**
+> `babel-preset-expo` injecte celui de Reanimated dès que `react-native-worklets` est
+> installé, et c'est **toujours lui** qui compile la directive — la sortie est strictement
+> identique avec ou sans `react-native-worklets-core/plugin` dans `babel.config.js`
+> (vérifié : sortie byte-identique, `__pluginVersion` reste `0.5.1`). Le greffon de
+> worklets-core est déclaré quand même, pour rendre la dépendance explicite. Ça fonctionne
+> parce que worklets-core relit le format de Reanimated — `__closure` + `__initData.code` —
+> via son mode de compatibilité `_isRea30Compat` (`cpp/WKTJsiWorklet.h`).
+>
+> **Les deux témoins à vérifier après toute touche au natif ou à Babel** : le frame processor
+> tourne (voyant de netteté dans le viseur), **et** l'écran de démarrage disparaît toujours au
+> lancement — c'est le seul autre worklet de l'application
+> (`src/components/animated-icon.tsx`).
+>
+> ⚠️ **Dette à reposer à la montée de SDK** : la collision Android entre les deux paquets de
+> worklets ne concerne que React Native 0.83 et au-delà ; l'application est en 0.81.5, et
+> `react-native-worklets-core` 1.6.3 a renommé la classe fautive en `WorkletsCorePackage`.
+> Rien à faire aujourd'hui, une ligne à prévoir dans le ticket de migration.
 
 > ⚠️ **Après tout ajout de module natif — dont la capture guidée — un dev client déjà
 > installé ne suffit plus : il faut le recompiler.** Sinon l'écran plante au montage,

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { type GestureResponderEvent, Pressable, StyleSheet, View } from 'react-native'
-import { Camera } from 'react-native-vision-camera'
+import { Camera, type ReadonlyFrameProcessor } from 'react-native-vision-camera'
 
 import type { TraceCamera } from '@/features/capture/hooks/useTraceCamera'
 import { CAPTURE_ASPECT_RATIO } from '@/features/capture/lib/captureFrame'
@@ -22,13 +22,15 @@ type TraceCameraViewProps = {
   camera: TraceCamera
   /** Coupe le capteur hors focus et pendant l'aperçu (batterie, caméra fantôme). */
   isActive: boolean
+  /** Analyse des images du viseur (`useCaptureSignals`). */
+  frameProcessor: ReadonlyFrameProcessor
   children?: ReactNode
 }
 
 /** Taille de l'indicateur de mise au point, en points. */
 const FOCUS_INDICATOR_SIZE = 64
 
-export default function TraceCameraView({ camera, isActive, children }: TraceCameraViewProps) {
+export default function TraceCameraView({ camera, isActive, frameProcessor, children }: TraceCameraViewProps) {
   const { device, focusPoint } = camera
 
   const handleTap = (event: GestureResponderEvent) => {
@@ -49,6 +51,10 @@ export default function TraceCameraView({ camera, isActive, children }: TraceCam
             photo={true}
             video={false}
             audio={false}
+            // Analyse des images du viseur (L3-4). La bibliothèque ouvre le pipeline vidéo
+            // dès qu'un frame processor est posé : `video` reste à `false`, qui ne concerne
+            // que l'enregistrement.
+            frameProcessor={frameProcessor}
             resizeMode="cover"
             photoQualityBalance="quality"
             torch={isActive && camera.isTorchOn ? 'on' : 'off'}

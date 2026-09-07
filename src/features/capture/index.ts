@@ -1,7 +1,16 @@
 export { default as CameraPermissionGate } from './components/CameraPermissionGate'
 export { default as CaptureControlsBar } from './components/CaptureControlsBar'
 export { default as CaptureOverlay } from './components/CaptureOverlay'
+export { default as CaptureSignalsBanner } from './components/CaptureSignalsBanner'
 export { default as TraceCameraView } from './components/TraceCameraView'
+export { type CaptureSignals, useCaptureSignals } from './hooks/useCaptureSignals'
+export {
+  ALIGNED_BELOW_DEG,
+  deviationFromPlumb,
+  type DeviceTilt,
+  MISALIGNED_ABOVE_DEG,
+  useDeviceTilt,
+} from './hooks/useDeviceTilt'
 export {
   type CapturedPhotoFile,
   type CapturePermission,
@@ -30,3 +39,11 @@ export {
   type ResolutionCheck,
   type ResolutionVerdict,
 } from './lib/captureResolution'
+export {
+  ANALYSIS_SIDE_PX,
+  cropRectFor,
+  isSharp,
+  laplacianVariance,
+  SHARP_ABOVE,
+  toGrayMat,
+} from './lib/sharpnessDetection'

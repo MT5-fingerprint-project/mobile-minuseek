@@ -10,6 +10,8 @@ import {
   CaptureOverlay,
   TraceCameraView,
   useCapturePermission,
+  useCaptureSignals,
+  useDeviceTilt,
   useTraceCamera,
 } from '@/features/capture'
 import { Button } from '@/features/shared/ui/button'
@@ -17,8 +19,12 @@ import { Text } from '@/features/shared/ui/text'
 import { buildCapturedTrace, type SelectedTrace, TracePreviewSheet, useUploadTrace } from '@/features/trace'
 
 /**
- * Viseur guidé (B1) : gate de permission → viseur + overlay → contrôle de résolution →
- * aperçu → envoi → `router.back()`.
+ * Viseur guidé : gate de permission → viseur + overlay → contrôle de résolution → aperçu →
+ * envoi → `router.back()`.
+ *
+ * L'aplomb (L3-3) et la netteté (L3-4) sont mesurés en continu pendant la visée. Ils
+ * **n'empêchent jamais de déclencher** et ne partent pas en base : ils servent le geste, pas
+ * le dossier. On ne revient pas sur les lieux pour une photo refusée par l'application.
  *
  * Tout se joue **dans cet écran** : il n'existe aucun mécanisme de retour de données entre
  * écrans dans ce repo, et il n'en faut aucun ici. Après l'envoi, `useUploadTrace` invalide
@@ -35,6 +41,11 @@ export default function CaptureScreen() {
   const [selected, setSelected] = useState<SelectedTrace | null>(null)
   const [warning, setWarning] = useState<string | null>(null)
 
+  // Le viseur est actif tant qu'on n'est pas dans l'aperçu : les deux mesures suivent.
+  const isViewfinderActive = isFocused && selected === null
+  const tilt = useDeviceTilt(isViewfinderActive)
+  const signals = useCaptureSignals()
+
   // `back()` ne mène nulle part si l'écran a été ouvert par un lien direct.
   const close = () =>
     router.canGoBack() ? router.back() : router.replace({ pathname: '/case/[id]', params: { id: caseId } })
@@ -47,6 +58,7 @@ export default function CaptureScreen() {
         Alert.alert('Photo trop peu détaillée', check.message ?? '', [{ text: 'Reprendre la photo' }])
         return
       }
+      // Pas d'avertissement de netteté ici : le viseur l'a dit avant, c'est là qu'on décide.
       setWarning(check.message)
       setSelected(buildCapturedTrace(file, caseId))
     } catch (error) {
@@ -102,8 +114,13 @@ export default function CaptureScreen() {
     <SafeAreaView className="flex-1 bg-black" edges={['top', 'bottom']}>
       <View className="flex-1 justify-center">
         {/* Capteur coupé hors focus et pendant l'aperçu : batterie, et pas de caméra fantôme. */}
-        <TraceCameraView camera={camera} isActive={isFocused && selected === null}>
-          <CaptureOverlay />
+        <TraceCameraView camera={camera} isActive={isViewfinderActive} frameProcessor={signals.frameProcessor}>
+          <CaptureOverlay
+            isAligned={tilt.isAligned}
+            tiltDeviationDeg={tilt.deviationDeg}
+            isSharp={signals.isSharp}
+            sharpnessScore={signals.sharpnessScore}
+          />
         </TraceCameraView>
 
         {camera.isDeviceResolutionInsufficient && (

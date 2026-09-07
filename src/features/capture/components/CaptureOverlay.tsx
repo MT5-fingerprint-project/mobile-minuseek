@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native'
 
+import CaptureSignalsBanner from '@/features/capture/components/CaptureSignalsBanner'
 import {
   COMPOSITION_FRAME,
   SAFE_AREA_INSET_RATIO,
@@ -16,18 +17,36 @@ import { Text } from '@/features/shared/ui/text'
  * 'dashed'` est buggé sur Android dès que `borderRadius > 0` — d'où `borderRadius: 0` partout
  * où il y a des pointillés.
  *
- * B1 ne fait **aucune** analyse d'image : ce guide est statique, le contrôle du cadrage se
- * fait a posteriori via le seuil de résolution. La mesure temps réel est le ticket B2.
+ * Le guide de cadrage reste **statique** : le contrôle du cadrage se fait a posteriori via le
+ * seuil de résolution. Les mesures temps réel vivent dans `CaptureSignalsBanner` (netteté,
+ * L3-4) et dans la couleur du cadre (aplomb, L3-3).
  */
+
+type CaptureOverlayProps = {
+  /** Aplomb de l'appareil : le cadre et ses coins passent au vert quand il est respecté. */
+  isAligned: boolean
+  /** Écart à l'aplomb en degrés ; `null` avant la première mesure. */
+  tiltDeviationDeg: number | null
+  isSharp: boolean | null
+  sharpnessScore: number | null
+}
+
+/**
+ * Couleur du cadre et des coins. Vert ou rouge, sans nuance intermédiaire : une troisième
+ * couleur ferait hésiter sans rien apprendre de plus.
+ */
+const ALIGNED_COLOR = '#4ADE80'
+const MISALIGNED_COLOR = '#F87171'
 
 const MASK = 'rgba(0,0,0,0.45)'
 const SCALE_GUIDE_COLOR = '#FACC15'
 
 const percent = (value: number) => `${value * 100}%` as const
 
-export default function CaptureOverlay() {
+export default function CaptureOverlay({ isAligned, tiltDeviationDeg, isSharp, sharpnessScore }: CaptureOverlayProps) {
   const insetX = percent(COMPOSITION_FRAME.width * SAFE_AREA_INSET_RATIO)
   const insetY = percent(COMPOSITION_FRAME.height * SAFE_AREA_INSET_RATIO)
+  const frameColor = isAligned ? ALIGNED_COLOR : MISALIGNED_COLOR
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
@@ -35,8 +54,8 @@ export default function CaptureOverlay() {
       <View style={{ height: percent(COMPOSITION_FRAME.y), backgroundColor: MASK }} />
       <View className="flex-row" style={{ height: percent(COMPOSITION_FRAME.height) }}>
         <View style={{ width: percent(COMPOSITION_FRAME.x), backgroundColor: MASK }} />
-        <View className="border-2 border-white/90" style={{ width: percent(COMPOSITION_FRAME.width) }}>
-          <FrameCorners />
+        <View className="border-2" style={{ width: percent(COMPOSITION_FRAME.width), borderColor: frameColor }}>
+          <FrameCorners color={frameColor} />
           {/* Zone utile : marge absorbant le redressement de D1. */}
           <View
             className="border border-dashed border-white/40"
@@ -47,37 +66,36 @@ export default function CaptureOverlay() {
       </View>
       <View className="flex-1" style={{ backgroundColor: MASK }} />
 
-      <View className="absolute inset-x-0 top-0 px-6 pt-4">
-        <Text className="text-center text-sm font-medium text-white">
-          La trace doit remplir le cadre. Tenez l&apos;appareil parallèle à la surface.
-        </Text>
-      </View>
+      <CaptureSignalsBanner tiltDeviationDeg={tiltDeviationDeg} isSharp={isSharp} sharpnessScore={sharpnessScore} />
 
       <ScaleGuide />
     </View>
   )
 }
 
-/** Coins renforcés : lisibles aussi bien sur fond clair que sombre. */
-function FrameCorners() {
+/**
+ * Coins renforcés : lisibles aussi bien sur fond clair que sombre. Ce sont eux qu'on voit le
+ * plus — ils portent donc la couleur du verdict d'aplomb au même titre que la bordure.
+ */
+function FrameCorners({ color }: { color: string }) {
   const size = 28
   return (
     <>
       <View
-        className="absolute left-0 top-0 border-l-[3px] border-t-[3px] border-white"
-        style={{ width: size, height: size }}
+        className="absolute left-0 top-0 border-l-[3px] border-t-[3px]"
+        style={{ width: size, height: size, borderColor: color }}
       />
       <View
-        className="absolute right-0 top-0 border-r-[3px] border-t-[3px] border-white"
-        style={{ width: size, height: size }}
+        className="absolute right-0 top-0 border-r-[3px] border-t-[3px]"
+        style={{ width: size, height: size, borderColor: color }}
       />
       <View
-        className="absolute bottom-0 left-0 border-b-[3px] border-l-[3px] border-white"
-        style={{ width: size, height: size }}
+        className="absolute bottom-0 left-0 border-b-[3px] border-l-[3px]"
+        style={{ width: size, height: size, borderColor: color }}
       />
       <View
-        className="absolute bottom-0 right-0 border-b-[3px] border-r-[3px] border-white"
-        style={{ width: size, height: size }}
+        className="absolute bottom-0 right-0 border-b-[3px] border-r-[3px]"
+        style={{ width: size, height: size, borderColor: color }}
       />
     </>
   )
