@@ -1,9 +1,10 @@
 import { Image } from 'expo-image'
-import { KeyboardAvoidingView, Modal, Platform, ScrollView, View } from 'react-native'
+import { Modal, ScrollView, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Button } from '@/features/shared/ui/button'
 import { Field, FieldLabel } from '@/features/shared/ui/field'
+import { KeyboardAvoidingView } from '@/features/shared/ui/keyboard-avoiding-view'
 import { Text } from '@/features/shared/ui/text'
 import { Textarea } from '@/features/shared/ui/textarea'
 import { MAX_TRACE_LOCATION_LENGTH, type SelectedTrace } from '@/features/trace/types/trace'
@@ -55,7 +56,7 @@ export default function TraceLocationStep({
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onBack}>
-      <KeyboardAvoidingView className="flex-1 bg-background" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView className="flex-1 bg-background">
         <ScrollView
           className="flex-1"
           contentContainerStyle={{ padding: 20, paddingTop: insets.top + 20, gap: 20 }}
