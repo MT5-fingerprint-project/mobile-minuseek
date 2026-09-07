@@ -15,6 +15,7 @@ export {
   type CapturedPhotoFile,
   type CapturePermission,
   type CapturePermissionStatus,
+  type CapturePurpose,
   type CaptureResult,
   type TraceCamera,
   useCapturePermission,

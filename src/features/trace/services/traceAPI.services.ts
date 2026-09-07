@@ -15,7 +15,18 @@ export const TraceAPI = {
    * La qualité mesurée dans le viseur ne part **pas** : ce qu'on mesure là-bas est la netteté
    * d'une image du flux, pas celle du JPEG versé au dossier (décision de L3-4).
    */
-  upload: ({ caseId, uri, mimeType, fileName, width, height, capturedAt, deviceModel }: SelectedTrace) => {
+  upload: ({
+    caseId,
+    uri,
+    mimeType,
+    fileName,
+    width,
+    height,
+    capturedAt,
+    deviceModel,
+    location,
+    locationPhoto,
+  }: SelectedTrace) => {
     const form = new FormData()
     form.append('caseId', caseId)
     form.append('file', {
@@ -33,6 +44,19 @@ export const TraceAPI = {
     }
     if (capturedAt !== undefined) form.append('capturedAt', capturedAt)
     if (deviceModel !== undefined) form.append('deviceModel', deviceModel)
+
+    // Localisation (L4-3c) : la phrase et le plan large sont indépendants — les quatre
+    // combinaisons sont valides côté back. Une phrase vide n'est pas envoyée du tout plutôt
+    // que d'être envoyée vide : le back la refuserait comme localisation non renseignée.
+    const statedLocation = location?.trim()
+    if (statedLocation) form.append('location', statedLocation)
+    if (locationPhoto !== undefined) {
+      form.append('locationPhoto', {
+        uri: locationPhoto.uri,
+        name: locationPhoto.fileName,
+        type: locationPhoto.mimeType,
+      } as unknown as Blob)
+    }
 
     return apiClient
       .post<UploadedTrace>('/traces', form, {

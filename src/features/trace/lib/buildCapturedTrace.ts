@@ -1,6 +1,6 @@
 import * as Device from 'expo-device'
 
-import type { SelectedTrace } from '@/features/trace/types/trace'
+import type { SelectedTrace, TraceLocationPhoto } from '@/features/trace/types/trace'
 
 /**
  * Photo issue de la **capture custom** (`@/features/capture`), volontairement décrite ici
@@ -45,5 +45,19 @@ export function buildCapturedTrace(photo: CapturedPhoto, caseId: string): Select
     // arrive ici, à quelques millisecondes du déclenchement.
     capturedAt: capturedAt.toISOString(),
     deviceModel: Device.modelName ?? undefined,
+  }
+}
+
+/**
+ * Même photo capturée, mais versée au dossier comme plan large de l'endroit : ni dimensions,
+ * ni date, ni modèle d'appareil — le back n'attend aucune métadonnée pour ce fichier-là, et
+ * `UploadTraceDto` n'en déclare qu'un jeu, celui de la trace.
+ */
+export function buildLocationPhoto(photo: CapturedPhoto): TraceLocationPhoto {
+  const mimeType = photo.mimeType ?? 'image/jpeg'
+  return {
+    uri: toFileUri(photo.path),
+    mimeType,
+    fileName: `trace-location-${Date.now()}.${extensionOf(mimeType)}`,
   }
 }
