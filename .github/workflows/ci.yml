@@ -8,7 +8,7 @@ on:
 
 jobs:
   quality:
-    name: Lint / Format / Types
+    name: Lint / Format / Types / Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -34,3 +34,6 @@ jobs:
 
       - name: Types
         run: pnpm typecheck
+
+      - name: Tests
+        run: pnpm test

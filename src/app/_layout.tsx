@@ -9,7 +9,9 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon'
+import { EnvironmentError } from '@/components/environment-error'
 import { AuthProvider, useAuth } from '@/features/shared/auth/auth-context'
+import { ENVIRONMENT_ERROR } from '@/features/shared/constants/global.constants'
 
 const queryClient = new QueryClient()
 
@@ -48,6 +50,22 @@ function RootNavigator() {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme()
+
+  // Environnement absent ou invalide : on n'entre pas dans l'app. Sans back ni Keycloak
+  // joignables, tout écran affiché serait un écran en panne, et la cause resterait
+  // invisible sur un téléphone où il n'y a ni Metro ni console.
+  if (ENVIRONMENT_ERROR) {
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <EnvironmentError message={ENVIRONMENT_ERROR} />
+          </ThemeProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    )
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
