@@ -212,42 +212,70 @@ vidéo, ni à un overlay, ni au choix de la résolution.
 
 ## Variables d'environnement
 
-La config se fait via un fichier **`.env`** à la racine de `mobile-minuseek`.
-Seules les variables préfixées par `EXPO_PUBLIC_` sont exposées au code de l'app
-(convention Expo) et sont lues via `process.env.EXPO_PUBLIC_*`.
+La configuration se fait via un fichier **`.env`** à la racine de `mobile-minuseek`,
+copié depuis **`.env.example`**. Seules les variables préfixées par `EXPO_PUBLIC_` sont
+exposées au code de l'app (convention Expo) et sont lues via `process.env.EXPO_PUBLIC_*`.
 
-**En général, aucune config n'est nécessaire.** L'URL de l'API est résolue dans
-`src/features/shared/constants/global.constants.ts` ainsi :
+| Variable                   | Description                                                          |
+| -------------------------- | -------------------------------------------------------------------- |
+| `EXPO_PUBLIC_API_URL`      | URL de base de l'API back-minuseek. **Doit se terminer par `/api`.** |
+| `EXPO_PUBLIC_KEYCLOAK_URL` | URL de base de Keycloak. **Sans barre oblique finale.**              |
 
-1. `EXPO_PUBLIC_API_URL` si défini → override explicite ;
+> ⚠️ `.env.example` est versionné et ne contient **jamais de valeur**. Les URL vivent
+> dans `.env`, ignoré par Git, sur la machine qui compile — rien n'est versionné.
+
+### En développement : rien à renseigner
+
+Les deux variables sont **facultatives**. `src/features/shared/constants/global.constants.ts`
+résout chaque URL ainsi :
+
+1. la variable `EXPO_PUBLIC_*` si elle est définie → override explicite ;
 2. sinon, l'hôte est **auto-détecté** depuis celui qui sert Metro
-   (`Constants.expoConfig.hostUri`, l'IP de ton ordi) → `http://<host>:3000/api`.
-   Le téléphone joint déjà Metro sur cette IP, donc il joint le back au même endroit ;
-3. sinon, fallback `http://localhost:3000/api` (simulateur iOS / web).
+   (`Constants.expoConfig.hostUri`, l'IP du poste) → `http://<host>:3000/api` et
+   `http://<host>:8080`. Le téléphone joint déjà Metro sur cette adresse, donc il joint
+   le back et Keycloak au même endroit ;
+3. sinon, repli `localhost` (simulateur iOS / web).
 
 Conséquence : sur le **même WiFi** qu'une session `expo start`, un téléphone physique
-charge les données **sans rien renseigner**.
+charge les données sans rien renseigner.
 
-| Variable              | Requis | Description                                                                                                                                                                           |
-| --------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `EXPO_PUBLIC_API_URL` | non    | Force l'URL de base de l'API. **Doit se terminer par `/api`**. À utiliser uniquement pour un back distant / staging, ou un téléphone hors du même réseau (via `expo start --tunnel`). |
+### En build autonome : les deux variables sont obligatoires
 
-Exemple d'override dans `.env` :
+Un build release ne contient pas de Metro : l'auto-détection ne donne rien et **il n'y a
+aucun repli**. Si l'une des deux variables manque ou est invalide, l'application s'arrête
+au démarrage sur un écran qui nomme la variable fautive, au lieu d'interroger `localhost`
+et d'échouer sur des erreurs réseau incompréhensibles.
+
+Contraintes vérifiées au démarrage :
+
+- URL absolue, et **HTTPS obligatoire** hors développement — Android et iOS refusent le
+  trafic en clair dans un build de production ;
+- `EXPO_PUBLIC_API_URL` se termine par `/api` (le back préfixe toutes ses routes) ;
+- `EXPO_PUBLIC_KEYCLOAK_URL` ne se termine pas par `/` (l'émetteur OIDC est construit
+  par concaténation : `${KEYCLOAK_URL}/realms/minuseek-<slug>`).
+
+Construire un APK installable, depuis la machine qui porte le `.env` :
 
 ```bash
-EXPO_PUBLIC_API_URL=http://192.168.1.10:3000/api
+npx expo run:android --variant release
+# → android/app/build/outputs/apk/release/app-release.apk
 ```
 
-> Le back-minuseek écoute sur le port `3000` (et sur toutes les interfaces : aucune
-> config réseau côté back n'est requise pour qu'un téléphone du même WiFi l'atteigne).
+> Un build lancé **dans le nuage** (`eas build` sans `--local`) ne reçoit pas `.env`,
+> puisqu'il est ignoré par Git : il faut alors passer les valeurs par les variables
+> d'environnement EAS. Sans elles, l'écran d'arrêt le dira explicitement.
 
 > Note : les variables `EXPO_PUBLIC_*` sont **inlinées dans le bundle** au build —
-> n'y mettre aucun secret. Après modification du `.env`, relancer avec `expo start -c`.
+> n'y mettre aucun secret. Après modification du `.env`, relancer avec `expo start -c`,
+> ou reconstruire pour un build autonome.
 
 ## Intégration continue
 
-`.github/workflows/ci.yml` rejoue `pnpm lint`, `pnpm format:check` et `pnpm typecheck`
-sur chaque push et chaque PR vers `main` (Node 22 / pnpm 11).
+`.github/workflows/ci.yml` rejoue `pnpm lint`, `pnpm format:check`, `pnpm typecheck`
+et `pnpm test` sur chaque push et chaque PR vers `main` (Node 22 / pnpm 11).
+
+Les tests unitaires tournent sous `jest-expo` (`jest.config.js`) ; ils vivent à côté du
+code qu'ils couvrent, en `*.test.ts`.
 
 ### Fichiers de types générés
 
