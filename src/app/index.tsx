@@ -17,7 +17,7 @@ export default function HomeScreen() {
   const { slug, signOut } = useAuth()
   const [isCreateOpen, setCreateOpen] = useState(false)
 
-  const { data: investigationCases = [], isPending } = useInvestigationCases()
+  const { data: investigationCases = [], isPending, isRefetching, refetch } = useInvestigationCases()
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom', 'left', 'right']}>
@@ -37,6 +37,8 @@ export default function HomeScreen() {
         <InvestigationCasesList
           investigationCases={investigationCases}
           isLoading={isPending}
+          onRefresh={() => void refetch()}
+          isRefreshing={isRefetching}
           onAddClick={() => setCreateOpen(true)}
           onCasePress={(investigationCase) =>
             router.push({ pathname: '/case/[id]', params: { id: investigationCase.id } })

@@ -1,3 +1,8 @@
+# ⚠️ pnpm 11 ne lit plus ces réglages dans `.npmrc` : ils doivent vivre ici.
+# `hoisted` reproduit une arborescence plate façon npm — Babel résout ses presets
+# (`babel-preset-expo`) depuis la racine du projet, et le bundling Metro échoue sans.
+nodeLinker: hoisted
+
 allowBuilds:
   unrs-resolver: true
 minimumReleaseAgeExclude:

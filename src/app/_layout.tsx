@@ -9,14 +9,16 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon'
+import { EnvironmentError } from '@/components/environment-error'
 import { AuthProvider, useAuth } from '@/features/shared/auth/auth-context'
+import { ENVIRONMENT_ERROR } from '@/features/shared/constants/global.constants'
 
 const queryClient = new QueryClient()
 
 /**
- * Auth gate : `Stack.Protected` (expo-router v6) n'expose `(tabs)` que si la session
- * est authentifiée, et l'écran `login` sinon. Basculement déclaratif — pas de
- * `router.replace` manuel. Pendant la restauration (`loading`), l'overlay de splash
+ * Auth gate : `Stack.Protected` (expo-router v6) n'expose l'écran racine (la liste des
+ * affaires) que si la session est authentifiée, et l'écran `login` sinon. Basculement
+ * déclaratif — pas de `router.replace` manuel. Pendant la restauration (`loading`), l'overlay de splash
  * couvre l'écran, donc `login` ne « flashe » pas pour un utilisateur déjà connecté.
  */
 function RootNavigator() {
@@ -26,7 +28,7 @@ function RootNavigator() {
   return (
     <Stack>
       <Stack.Protected guard={isAuthenticated}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="case/[id]" options={{ title: 'Affaire' }} />
         {/* Capture guidée : plein écran, sans en-tête, verrouillée en portrait comme l'overlay. */}
         <Stack.Screen
@@ -48,6 +50,22 @@ function RootNavigator() {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme()
+
+  // Environnement absent ou invalide : on n'entre pas dans l'app. Sans back ni Keycloak
+  // joignables, tout écran affiché serait un écran en panne, et la cause resterait
+  // invisible sur un téléphone où il n'y a ni Metro ni console.
+  if (ENVIRONMENT_ERROR) {
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <EnvironmentError message={ENVIRONMENT_ERROR} />
+          </ThemeProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    )
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>

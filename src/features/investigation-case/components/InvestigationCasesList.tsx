@@ -9,6 +9,10 @@ type InvestigationCasesListProps = {
   isLoading: boolean
   onAddClick: () => void
   onCasePress?: (investigationCase: InvestigationCase) => void
+  /** Tirer vers le bas pour recharger. Sans ce rappel, le geste est inactif. */
+  onRefresh?: () => void
+  /** Vrai pendant le rechargement déclenché par le geste : pilote l'indicateur. */
+  isRefreshing?: boolean
 }
 
 function AddNewCard({ onPress }: { onPress: () => void }) {
@@ -31,6 +35,8 @@ export default function InvestigationCasesList({
   isLoading,
   onAddClick,
   onCasePress,
+  onRefresh,
+  isRefreshing = false,
 }: InvestigationCasesListProps) {
   return (
     <FlatList
@@ -42,6 +48,9 @@ export default function InvestigationCasesList({
       renderItem={({ item }) => <InvestigationCaseCard investigationCase={item} onPress={onCasePress} />}
       contentContainerClassName="gap-4 pb-4"
       showsVerticalScrollIndicator={false}
+      // `onRefresh` absent → FlatList n'affiche aucun indicateur et ignore le geste.
+      onRefresh={onRefresh}
+      refreshing={isRefreshing}
     />
   )
 }
