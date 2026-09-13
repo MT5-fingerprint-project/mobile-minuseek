@@ -30,7 +30,7 @@ export default function LoginScreen() {
     setIsSubmitting(true)
     try {
       await signIn(normalizedSlug)
-      // Succès : l'auth gate bascule automatiquement vers (tabs).
+      // Succès : l'auth gate bascule automatiquement vers la liste des affaires.
     } catch (caught) {
       // Annulation volontaire (fermeture du navigateur) : pas de message d'erreur.
       const isCancelled =

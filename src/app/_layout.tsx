@@ -16,9 +16,9 @@ import { ENVIRONMENT_ERROR } from '@/features/shared/constants/global.constants'
 const queryClient = new QueryClient()
 
 /**
- * Auth gate : `Stack.Protected` (expo-router v6) n'expose `(tabs)` que si la session
- * est authentifiée, et l'écran `login` sinon. Basculement déclaratif — pas de
- * `router.replace` manuel. Pendant la restauration (`loading`), l'overlay de splash
+ * Auth gate : `Stack.Protected` (expo-router v6) n'expose l'écran racine (la liste des
+ * affaires) que si la session est authentifiée, et l'écran `login` sinon. Basculement
+ * déclaratif — pas de `router.replace` manuel. Pendant la restauration (`loading`), l'overlay de splash
  * couvre l'écran, donc `login` ne « flashe » pas pour un utilisateur déjà connecté.
  */
 function RootNavigator() {
@@ -28,7 +28,7 @@ function RootNavigator() {
   return (
     <Stack>
       <Stack.Protected guard={isAuthenticated}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="case/[id]" options={{ title: 'Affaire' }} />
         {/* Capture guidée : plein écran, sans en-tête, verrouillée en portrait comme l'overlay. */}
         <Stack.Screen

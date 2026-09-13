@@ -257,9 +257,33 @@ Contraintes vérifiées au démarrage :
 Construire un APK installable, depuis la machine qui porte le `.env` :
 
 ```bash
-npx expo run:android --variant release
+npx expo prebuild --platform android   # seulement si le dossier `android` manque (gitignoré)
+cd android && ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a
 # → android/app/build/outputs/apk/release/app-release.apk
 ```
+
+`arm64-v8a` couvre tout téléphone Android récent. Sans cette restriction, Gradle empile
+les bibliothèques natives des quatre architectures (`armeabi-v7a`, `arm64-v8a`, `x86`,
+`x86_64`), dont un téléphone n'utilise qu'une : l'APK passe d'environ 70 Mo à 250 Mo.
+`android/gradle.properties` porte le même réglage, mais il est régénéré par `prebuild`,
+d'où l'option en ligne de commande.
+
+> Après modification du `.env`, supprimer le bundle déjà généré, sinon Gradle considère
+> l'étape comme à jour et l'APK conserve les anciennes URL :
+>
+> ```bash
+> rm -rf android/app/build/generated/assets/createBundleReleaseJsAndAssets
+> ```
+
+Puis l'installer sur un téléphone branché, ou simplement lui transférer le fichier :
+
+```bash
+adb install -r android/app/build/outputs/apk/release/app-release.apk
+```
+
+> ⚠️ `npx expo run:android --variant release` produit le même APK mais **l'installe et le
+> lance dans la foulée** : il exige donc un appareil connecté ou un émulateur, et échoue
+> sans. Pour ne fabriquer que le fichier, utiliser la tâche Gradle ci-dessus.
 
 > Un build lancé **dans le nuage** (`eas build` sans `--local`) ne reçoit pas `.env`,
 > puisqu'il est ignoré par Git : il faut alors passer les valeurs par les variables
