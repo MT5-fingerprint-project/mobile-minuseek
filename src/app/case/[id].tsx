@@ -1,4 +1,3 @@
-import Constants, { ExecutionEnvironment } from 'expo-constants'
 import { router, Stack, useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
 import { Alert, View } from 'react-native'
@@ -13,38 +12,23 @@ import {
   TracePreviewSheet,
   TracesGrid,
   TraceViewerModal,
-  useCaptureTraceForCase,
   usePickImageForCase,
   useTraces,
   useUploadTrace,
 } from '@/features/trace'
 
-/**
- * La capture guidée (viseur custom) embarque un module natif : elle n'existe pas dans
- * l'Expo Go des stores. On y retombe alors sur l'UI caméra système — filet de sécurité
- * assumé, à retirer une fois le development build généralisé.
- */
-const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient
-
 export default function CaseScreen() {
   const { id: caseId } = useLocalSearchParams<{ id: string }>()
-  // Deux objets distincts : `selected` est une image locale pas encore envoyée,
-  // `viewing` une trace déjà stockée côté back.
   const [selected, setSelected] = useState<SelectedTrace | null>(null)
   const [viewing, setViewing] = useState<Trace | null>(null)
 
   const investigationCase = useInvestigationCase(caseId)
   const traces = useTraces(caseId)
 
-  const { takePhoto } = useCaptureTraceForCase(caseId)
   const { pickImage } = usePickImageForCase(caseId)
   const upload = useUploadTrace()
 
-  const handleTakePhoto = async () => {
-    if (isExpoGo) {
-      setSelected(await takePhoto())
-      return
-    }
+  const handleTakePhoto = () => {
     router.push({ pathname: '/capture/[caseId]', params: { caseId } })
   }
 
@@ -61,7 +45,6 @@ export default function CaseScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['bottom', 'left', 'right']}>
-      {/* Surcharge le `title: 'Affaire'` de repli posé par `_layout.tsx`. */}
       <Stack.Screen
         options={{
           title: investigationCase.data ? `Affaire N°${investigationCase.data.caseNumber}` : 'Affaire',

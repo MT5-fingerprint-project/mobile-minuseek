@@ -2,7 +2,6 @@ import { Pressable, View } from 'react-native'
 
 import { Text } from '@/features/shared/ui/text'
 
-/** Fermer / déclencheur / torche. Barre posée sous le viseur, sur fond noir. */
 type CaptureControlsBarProps = {
   onClose: () => void
   onCapture: () => void

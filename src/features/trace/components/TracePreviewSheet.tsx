@@ -15,19 +15,9 @@ type TracePreviewSheetProps = {
   onCancel: () => void
   /** Avertissement non bloquant (résolution sous la valeur recommandée) : bandeau ambre. */
   warning?: string | null
-  /**
-   * Ouvre l'étape de localisation (L4-3c). Absent sur les chemins de repli — import depuis
-   * la galerie, caméra système de l'Expo Go des stores — qui envoient la trace seule : la
-   * feuille garde alors ses deux boutons « Envoyer » / « Annuler ».
-   */
   onAddLocation?: () => void
 }
 
-/**
- * Poids et dimensions du fichier : le back n'impose aucune limite de taille et bufferise
- * l'upload en mémoire — l'utilisateur doit au moins voir ce qu'il s'apprête à envoyer.
- * Le reste (timeout, progression, compression) est le ticket « robustesse upload ».
- */
 function describeFile(selected: SelectedTrace | null): string | null {
   if (selected == null) return null
   const parts: string[] = []
@@ -37,9 +27,7 @@ function describeFile(selected: SelectedTrace | null): string | null {
   try {
     const bytes = new File(selected.uri).size
     if (bytes > 0) parts.push(`${(bytes / 1_000_000).toFixed(1).replace('.', ',')} Mo`)
-  } catch {
-    // Fichier illisible (URI distante, contenu déplacé) : on n'affiche que ce qu'on sait.
-  }
+  } catch {}
   return parts.length > 0 ? parts.join(' · ') : null
 }
 
@@ -57,7 +45,6 @@ export default function TracePreviewSheet({
   return (
     <Modal visible={selected !== null} animationType="slide" transparent onRequestClose={onCancel}>
       <View className="flex-1 justify-end bg-black/40">
-        {/* Tap outside to dismiss (bloqué pendant l'envoi) */}
         <Pressable className="flex-1" onPress={isUploading ? undefined : onCancel} accessibilityLabel="Fermer" />
         <View
           className="rounded-t-3xl bg-background px-5 pt-5"
@@ -86,7 +73,6 @@ export default function TracePreviewSheet({
                 <Text>Ajouter la localisation</Text>
               </Button>
             )}
-            {/* Sans étape de localisation, l'envoi reste l'action principale. */}
             <Button
               variant={onAddLocation ? 'secondary' : 'default'}
               onPress={onConfirm}

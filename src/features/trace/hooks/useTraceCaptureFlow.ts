@@ -3,16 +3,6 @@ import { useCallback, useState } from 'react'
 import { buildCapturedTrace, buildLocationPhoto, type CapturedPhoto } from '@/features/trace/lib/buildCapturedTrace'
 import type { SelectedTrace } from '@/features/trace/types/trace'
 
-/**
- * Le parcours de capture, de la visée à l'objet prêt à partir.
- *
- * Il vit dans `features/trace` et non dans `features/capture` parce qu'il assemble le
- * `SelectedTrace` qu'on envoie ; la caméra, elle, reste dans `features/capture`.
- *
- * ⚠️ Ces étapes ne sont **pas** des routes : il n'existe aucun mécanisme de retour de données
- * entre écrans dans ce repo, et l'écran de capture n'en ouvre aucune. Tout est de l'état local
- * d'un seul écran (cf. l'en-tête de `src/app/capture/[caseId].tsx`).
- */
 export type TraceCaptureStep =
   /** Viseur guidé, cadre et règle dessinés : le gros plan de la trace. */
   | 'trace-framing'
@@ -57,18 +47,13 @@ export function useTraceCaptureFlow(caseId: string): TraceCaptureFlow {
   )
 
   const retakeTracePhoto = useCallback(() => {
-    // On repart de zéro : la phrase et le plan large décrivaient la trace qu'on abandonne.
     setTrace(null)
     setWarning(null)
     setStep('trace-framing')
   }, [])
 
-  // Sert aussi de retour depuis le viseur du plan large : dans les deux cas, on revient au
-  // formulaire sans rien perdre de ce qui y a déjà été saisi.
   const startLocationStep = useCallback(() => setStep('location-form'), [])
 
-  // La phrase et le plan large déjà saisis sont conservés : on quitte l'étape, on ne l'annule
-  // pas. « Envoyer sans localisation » depuis l'aperçu, lui, part sans les emporter.
   const leaveLocationStep = useCallback(() => setStep('trace-preview'), [])
 
   const stateLocation = useCallback((location: string) => {

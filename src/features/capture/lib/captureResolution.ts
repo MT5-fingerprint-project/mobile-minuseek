@@ -1,16 +1,3 @@
-/**
- * Seuils de résolution de la capture guidée.
- *
- * Cible : 500 dpi sur la scène utile, soit 500 / 25,4 ≈ 19,69 px/mm. Une scène de ~60 mm
- * de large (trace + règle millimétrée) occupant 80 % du petit côté demande donc
- * 60 × 19,69 ≈ 1 181 px utiles, soit un petit côté ≈ 1 181 / 0,8 ≈ 1 476 px → arrondi à 1536.
- *
- * Le seuil recommandé (2448 px, ≈ 8 Mpx en 4:3) laisse la marge nécessaire au crop et au
- * redressement de D1 (~830 dpi).
- *
- * Ces seuils ne s'appliquent **qu'à la capture custom** : le chemin galerie reste inchangé.
- */
-
 export const MIN_SHORT_SIDE_PX = 1536
 export const RECOMMENDED_SHORT_SIDE_PX = 2448
 export const MIN_TOTAL_PIXELS = 3_000_000

@@ -4,13 +4,6 @@ import type { CapturePermissionStatus } from '@/features/capture/hooks/useTraceC
 import { Button } from '@/features/shared/ui/button'
 import { Text } from '@/features/shared/ui/text'
 
-/**
- * Écran de repli quand la caméra n'est pas autorisée.
- *
- * Volontairement **pas** un `Alert` (le reste de l'app en est pourtant fait) : sur un plein
- * écran dédié, une alerte se referme sur un écran noir, sans explication ni sortie. Ce
- * composant est le seul endroit de l'app à ouvrir les réglages système.
- */
 type CameraPermissionGateProps = {
   status: Exclude<CapturePermissionStatus, 'granted'>
   onRequest: () => void

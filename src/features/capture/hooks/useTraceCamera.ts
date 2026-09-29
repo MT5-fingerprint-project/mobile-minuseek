@@ -18,21 +18,6 @@ import {
   type ResolutionCheck,
 } from '@/features/capture/lib/captureResolution'
 
-/**
- * ⚠️ Un des **deux seuls** fichiers de l'app qui dépendent de la bibliothèque caméra
- * (l'autre est `components/TraceCameraView.tsx`). Tout changement de bibliothèque se
- * confine à ces deux fichiers : le reste de la feature ne manipule que les types ci-dessous.
- *
- * VisionCamera est ici en **v4.7.3**, pas en v5. La v5 (Nitro) compile sur RN 0.81 mais
- * plante au montage de la vue : ses props sont passées en valeurs JSI brutes, ce que le
- * renderer de RN 0.81 ne sait pas lire sans le feature flag `useRawPropsJsiValue`
- * (`RawValue.h: castValue: assertion failed`). La v4 n'utilise pas ce mécanisme.
- *
- * L'analyse des images du viseur ne vit **pas** ici : c'est `useCaptureSignals`, pour ne pas
- * étendre encore la surface de ce fichier. Il ne reste ici que la session caméra.
- */
-
-/** Photo capturée, réduite à ce dont le reste de l'app a besoin. */
 export type CapturedPhotoFile = {
   /** Chemin filesystem (sans schéma `file://`). */
   path: string
@@ -41,12 +26,6 @@ export type CapturedPhotoFile = {
   mimeType: string
 }
 
-/**
- * État de la permission caméra, en 3 situations distinctes :
- * - `undetermined` : jamais demandée, on peut ouvrir la boîte de dialogue système ;
- * - `denied` : refusée mais redemandable (cas Android « Refuser » simple) ;
- * - `blocked` : refus définitif ou restriction — seuls les réglages système débloquent.
- */
 export type CapturePermissionStatus = 'granted' | 'undetermined' | 'denied' | 'blocked'
 
 export type CapturePermission = {
@@ -57,19 +36,13 @@ export type CapturePermission = {
 function mapPermissionStatus(status: CameraPermissionStatus, wasRequested: boolean): CapturePermissionStatus {
   if (status === 'granted') return 'granted'
   if (status === 'denied' || status === 'restricted') return 'blocked'
-  // `not-determined` après une demande = refus simple sur Android : redemandable.
   return wasRequested ? 'denied' : 'undetermined'
 }
 
-/**
- * `useCameraPermission` de la bibliothèque ne renvoie qu'un booléen : il ne permet pas de
- * distinguer un refus redemandable d'un refus définitif, donc pas d'écran de repli correct.
- */
 export function useCapturePermission(): CapturePermission {
   const [status, setStatus] = useState<CameraPermissionStatus>(() => Camera.getCameraPermissionStatus())
   const [wasRequested, setWasRequested] = useState(false)
 
-  // L'utilisateur peut autoriser depuis les réglages système : on relit au retour dans l'app.
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (state) => {
       if (state === 'active') setStatus(Camera.getCameraPermissionStatus())
@@ -87,19 +60,8 @@ export function useCapturePermission(): CapturePermission {
   return { status: mapPermissionStatus(status, wasRequested), request }
 }
 
-/**
- * Usage visé par une prise de vue. Il ne change pas la session caméra, seulement le contrôle
- * appliqué à la photo : le gros plan d'une trace est mesuré, le plan large de l'endroit ne
- * l'est pas (cf. `takePicture`).
- */
 export type CapturePurpose = 'trace' | 'location'
 
-/**
- * Résultat d'une prise de vue. `file` est `null` quand la résolution est refusée : le
- * fichier temporaire écrit par la caméra est alors supprimé, et seul `check.message`
- * est à afficher. `check` vaut `null` quand aucun seuil ne s'applique — `file` est alors
- * toujours renseigné.
- */
 export type CaptureResult = {
   check: ResolutionCheck | null
   file: CapturedPhotoFile | null
@@ -131,31 +93,16 @@ export type TraceCamera = {
 /** Durée d'affichage de l'indicateur de mise au point, en ms. */
 const FOCUS_INDICATOR_MS = 1200
 
-/**
- * Définition demandée pour le flux d'analyse (`useCaptureSignals`) — sans effet sur la
- * définition de la photo. **4:3, comme tout le reste du viseur** : un 16:9 ici ferait diverger
- * le repère des images analysées de celui de la photo, et les rectangles de `captureFrame.ts`
- * ne vaudraient plus pour les deux.
- */
 const ANALYSIS_VIDEO_RESOLUTION = { width: 1280, height: 960 }
 
 export function useTraceCamera(): TraceCamera {
   const cameraRef = useRef<Camera | null>(null)
   const device = useCameraDevice('back')
 
-  /**
-   * Le 4:3 n'est pas négociable et passe **avant** la résolution : l'overlay est calé sur
-   * ce ratio (cf. `captureFrame.ts`), un format 16:9 rendrait les coordonnées du cadre
-   * fausses pour D1/D2. Les filtres sont classés par priorité décroissante. Les ratios sont
-   * exprimés largeur / hauteur en paysage (repère du capteur), d'où 4/3 et non 3/4.
-   */
   const format = useCameraFormat(device, [
     { photoAspectRatio: 4 / 3 },
     { videoAspectRatio: 4 / 3 },
     { photoResolution: 'max' },
-    // En dernier, donc jamais au détriment des trois filtres ci-dessus : le flux vidéo ne
-    // sert qu'à l'analyse du viseur, une définition modeste suffit et divise d'autant le
-    // coût de chaque image. La photo, elle, ne perd pas un pixel.
     { videoResolution: ANALYSIS_VIDEO_RESOLUTION },
   ])
 
@@ -188,17 +135,12 @@ export function useTraceCamera(): TraceCamera {
       if (camera == null || device?.supportsFocus !== true) return
       setFocusPoint(point)
       try {
-        // Mesure AF (et AE/AWB côté natif) sur le point touché. La v4 n'expose pas de
-        // verrouillage d'exposition explicite : à rouvrir avec les contrôles qualité (B2).
         await camera.focus(point)
-      } catch {
-        // Mise au point impossible (caméra occupée, point hors cadre) : sans effet.
-      }
+      } catch {}
     },
     [device]
   )
 
-  // L'indicateur de mise au point s'efface seul.
   useEffect(() => {
     if (focusPoint == null) return
     const timeout = setTimeout(() => setFocusPoint(null), FOCUS_INDICATOR_MS)
@@ -214,21 +156,13 @@ export function useTraceCamera(): TraceCamera {
       const photo = await camera.takePhoto({ flash: 'off' })
       const file = { path: photo.path, width: photo.width, height: photo.height, mimeType: 'image/jpeg' }
 
-      // Aucun seuil sur un plan large : les 1 536 px du petit côté visent 500 dpi sur une
-      // scène de 60 mm, c'est-à-dire un gros plan. Sur une pièce photographiée à deux mètres
-      // ce chiffre ne veut rien dire, et refuser un plan large parfaitement lisible ferait
-      // perdre l'information au lieu de la protéger. Rien n'est donc mesuré ni supprimé ici.
       if (purpose === 'location') return { check: null, file }
 
       const check = evaluateCaptureResolution(photo.width, photo.height)
       if (check.verdict === 'rejected') {
-        // La v4 écrit toujours le fichier : une photo refusée doit être nettoyée,
-        // sinon elle s'accumule dans le dossier temporaire.
         try {
           new File(`file://${photo.path}`).delete()
-        } catch {
-          // Fichier déjà absent ou verrouillé : le système videra le dossier temporaire.
-        }
+        } catch {}
         return { check, file: null }
       }
       return { check, file }

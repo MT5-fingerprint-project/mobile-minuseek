@@ -9,16 +9,6 @@ import { Text } from '@/features/shared/ui/text'
 import { Textarea } from '@/features/shared/ui/textarea'
 import { MAX_TRACE_LOCATION_LENGTH, type SelectedTrace } from '@/features/trace/types/trace'
 
-/**
- * L'étape facultative qui suit la prise de vue d'une trace : où elle a été relevée, en une
- * phrase, et le plan large de l'endroit.
- *
- * C'est une `Modal` posée par-dessus l'écran de capture, pas une route : le viseur derrière
- * est monté `isActive={false}` (cf. `src/app/capture/[caseId].tsx`).
- *
- * Les deux exemples sous le champ ne sont pas décoratifs : sans eux on écrit « fenêtre », ce
- * qui ne situe rien deux semaines plus tard, au lieu d'une phrase qui situe.
- */
 type TraceLocationStepProps = {
   visible: boolean
   /** La trace qu'on vient de prendre : sa vignette dit de quelle trace on parle. */
