@@ -22,12 +22,12 @@ export function useCapturePermission(): CapturePermission {
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (state) => {
-      // if app first plan, ask permission status
+      // if app first plan, re-read the permission status
       if (state === 'active') {
         setStatus(Camera.getCameraPermissionStatus())
       }
     })
-    // unsub on close capture
+    // unsubscribe when the capture screen unmounts
     return () => subscription.remove()
   }, [])
 

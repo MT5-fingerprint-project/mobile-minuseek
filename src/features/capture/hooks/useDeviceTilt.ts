@@ -15,7 +15,7 @@ type Vector = { x: number; y: number; z: number }
 
 export function deviationFromPlumb(gravity: Vector): number {
 
-  // returns the square root of the sum of the squares of its arguments (should always be equals to 9,81)
+  // returns the square root of the sum of the squares of its arguments ( ~9,81 when the phone doesn't move)
   const magnitude = Math.hypot(gravity.x, gravity.y, gravity.z)
 
   if (magnitude === 0) {
@@ -25,7 +25,7 @@ export function deviationFromPlumb(gravity: Vector): number {
 
   // Math.abs to remeve negative sign, then cosinus a/h
   const cosine = Math.abs(gravity.z) / magnitude
-  // math.acos calculate the cosinus angle in radiant. * 180 / Math.PI convert radiant in degrees
+  // math.acos calculates the cosinus angle in radians. * 180 / Math.PI convert radians in degrees
   const angleFromFlat = (Math.acos(cosine) * 180) / Math.PI
 
   // return the minimum value between angleFromFlat and diff to 90 degrees
@@ -56,7 +56,7 @@ export function useDeviceTilt(isActive: boolean): DeviceTilt {
       }
 
       DeviceMotion.setUpdateInterval(SAMPLE_INTERVAL_MS)
-      // subscribe to listener on acceleration and gravity, if immobile phone, only gravity remain
+      // subscribe to listener on acceleration and gravity, if immobile phone, only gravity remains
       subscription = DeviceMotion.addListener(({ accelerationIncludingGravity }) => {
         if (accelerationIncludingGravity == null) {
           return

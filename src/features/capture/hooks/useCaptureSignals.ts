@@ -32,7 +32,7 @@ export function useCaptureSignals(): CaptureSignals {
     setIsSharpState((previous) => (previous === sharp ? previous : sharp))
   }, [])
 
-  // prepare analyze to be used in camera's thread
+  // prepare analysis to be used in camera's thread
   const frameProcessor = useFrameProcessor(
     (frame) => {
       'worklet'

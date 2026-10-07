@@ -10,9 +10,7 @@ import {
 import { Text } from '@/features/shared/ui/text'
 
 type CaptureOverlayProps = {
-  /** Aplomb de l'appareil : le cadre et ses coins passent au vert quand il est respecté. */
   isAligned: boolean
-  /** Écart à l'aplomb en degrés ; `null` avant la première mesure. */
   tiltDeviationDeg: number | null
   isSharp: boolean | null
 }

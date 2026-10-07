@@ -30,9 +30,9 @@ export function toGrayMat(bgr: Uint8Array, side: number): Mat {
 export function laplacianVariance(gray: Mat, side: number): number {
   // tells babel to prepare this function to run in the camera's thread js engine
   'worklet'
-  // create empty images to receive laplacian result, CV_64f : 64 bits, float, can be negative
+  // create empty images to receive laplacian result, CV_64F : 64 bits, float, can be negative
   const laplacian = OpenCV.createObject(ObjectType.Mat, side, side, DataTypes.CV_64F)
-  // calcul laplacian
+  // compute the laplacian
   OpenCV.invoke('Laplacian', gray, laplacian, DataTypes.CV_64F, 1, 1, 0, 4)
 
   // boxes of 1 number each, filled by opencv
@@ -58,6 +58,6 @@ export function isSharp(score: number, previous: boolean): boolean {
     return false
   }
 
-  // if between sharp_above and (sharp_above * hysteresis_ration)
+  // if between sharp_above and (sharp_above * hysteresis_ration), keep previous
   return previous
 }

@@ -41,7 +41,7 @@ export function useTraceCamera(): TraceCamera {
   const cameraRef = useRef<Camera | null>(null)
   const device = useCameraDevice('back')
 
-  // priore format to use if available
+  //  preferred formats, by priority: the closest match is chosen
   const format = useCameraFormat(device, [
     { photoAspectRatio: 4 / 3 },
     { videoAspectRatio: 4 / 3 },
@@ -49,7 +49,7 @@ export function useTraceCamera(): TraceCamera {
     { videoResolution: ANALYSIS_VIDEO_RESOLUTION },
   ])
 
-  // describe camera's state every call
+  // describe camera's states
   const [isReady, setIsReady] = useState(false)
   const [isCapturing, setIsCapturing] = useState(false)
   const [error, setError] = useState<Error | null>(null)
@@ -86,7 +86,7 @@ export function useTraceCamera(): TraceCamera {
     } catch {}
   }
 
-  // stop focus after delay
+  // stop focus indicator after delay
   useEffect(() => {
     if (focusPoint == null) {
       return

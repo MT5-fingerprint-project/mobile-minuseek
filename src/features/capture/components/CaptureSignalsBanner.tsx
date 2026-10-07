@@ -3,9 +3,7 @@ import { View } from 'react-native'
 import { Text } from '@/features/shared/ui/text'
 
 type CaptureSignalsBannerProps = {
-  /** Écart à l'aplomb en degrés ; `null` avant la première mesure du capteur. */
   tiltDeviationDeg: number | null
-  /** Netteté de la dernière image analysée ; `null` avant la première. */
   isSharp: boolean | null
 }
 
