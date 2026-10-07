@@ -19,18 +19,27 @@ import { TraceLocationStep, TracePreviewSheet, useTraceCaptureFlow, useUploadTra
 
 export default function CaptureScreen() {
   const { caseId } = useLocalSearchParams<{ caseId: string }>()
+
+  // used as a switch to desactivate camera if not on displaying component
   const isFocused = useIsFocused()
 
+  // ask for camera's permission
   const permission = useCapturePermission()
+  // prepare all camera's state and function
   const camera = useTraceCamera()
+  // uploads a trace to its case
   const upload = useUploadTrace()
+  // contain all the capture's logics and flows
   const flow = useTraceCaptureFlow(caseId)
 
   const isTraceFraming = flow.step === 'trace-framing'
   const isLocationFraming = flow.step === 'location-framing'
 
+  // are we in camera mode
   const isViewfinderActive = isFocused && (isTraceFraming || isLocationFraming)
+  // start tilt device
   const tilt = useDeviceTilt(isFocused && isTraceFraming)
+  // sharpness check, run by the camera during trace framing only
   const signals = useCaptureSignals()
 
   const close = () =>
@@ -93,7 +102,11 @@ export default function CaptureScreen() {
   return (
     <SafeAreaView className="flex-1 bg-black" edges={['top', 'bottom']}>
       <View className="flex-1 justify-center">
-        <TraceCameraView camera={camera} isActive={isViewfinderActive} frameProcessor={signals.frameProcessor}>
+        <TraceCameraView
+          camera={camera}
+          isActive={isViewfinderActive}
+          frameProcessor={isTraceFraming ? signals.frameProcessor : undefined}
+        >
           {!isLocationFraming && (
             <CaptureOverlay isAligned={tilt.isAligned} tiltDeviationDeg={tilt.deviationDeg} isSharp={signals.isSharp} />
           )}

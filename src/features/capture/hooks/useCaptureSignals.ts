@@ -15,31 +15,35 @@ import {
 const ANALYSIS_FPS = 3
 
 export type CaptureSignals = {
-  /** Netteté de la dernière image analysée ; `null` avant la première. */
   isSharp: boolean | null
-  /** À passer au `<Camera>` ; la caméra ouvre le flux d'analyse dès qu'il est posé. */
   frameProcessor: ReadonlyFrameProcessor
 }
 
 export function useCaptureSignals(): CaptureSignals {
   const { resize } = useResizePlugin()
 
+  // we use a shared value to use it in the camera thread
   const wasSharp = useSharedValue(false)
+  // a state to display on screen
   const [isSharpState, setIsSharpState] = useState<boolean | null>(null)
 
+  // bridge between 2 thread. executed in react's thread, used in camera's thread
   const publish = useRunOnJS((sharp: boolean) => {
     setIsSharpState((previous) => (previous === sharp ? previous : sharp))
   }, [])
 
+  // prepare analyze to be used in camera's thread
   const frameProcessor = useFrameProcessor(
     (frame) => {
       'worklet'
+      // if less than analysis_fps since last frame treated, ignore the frame
       runAtTargetFps(ANALYSIS_FPS, () => {
+        // tells babel to prepare this function to run in the camera's thread js engine
         'worklet'
+        // prepare small images to analyze, return byte array
         const resized = resize(frame, {
           crop: cropRectFor(frame.width, frame.height),
           scale: { width: ANALYSIS_SIDE_PX, height: ANALYSIS_SIDE_PX },
-          rotation: '90deg',
           pixelFormat: 'bgr',
           dataType: 'uint8',
         })
@@ -47,10 +51,12 @@ export function useCaptureSignals(): CaptureSignals {
         const gray = toGrayMat(resized, ANALYSIS_SIDE_PX)
         const score = laplacianVariance(gray, ANALYSIS_SIDE_PX)
 
+        // clear buffer used by grayMat and laplacianVariance since react doesn't clear C++
         OpenCV.clearBuffers()
 
         const sharp = isSharp(score, wasSharp.value)
         wasSharp.value = sharp
+        // send result to react's thread
         publish(sharp)
       })
     },

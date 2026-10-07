@@ -1,31 +1,34 @@
 import { DeviceMotion } from 'expo-sensors'
 import { useEffect, useState } from 'react'
 
-/** En deçà de cet écart (en degrés), l'appareil est déclaré d'aplomb. */
 export const ALIGNED_BELOW_DEG = 5
-
 export const MISALIGNED_ABOVE_DEG = 6
-
 const SAMPLE_INTERVAL_MS = 100
-
 const SMOOTHING = 0.2
 
 export type DeviceTilt = {
-  /** Écart à la pose d'aplomb la plus proche, en degrés ; `null` avant la 1ʳᵉ mesure. */
   deviationDeg: number | null
-  /** `true` quand l'appareil est d'aplomb. Faux tant qu'on n'a pas mesuré. */
   isAligned: boolean
 }
 
 type Vector = { x: number; y: number; z: number }
 
 export function deviationFromPlumb(gravity: Vector): number {
-  const magnitude = Math.hypot(gravity.x, gravity.y, gravity.z)
-  if (magnitude === 0) return 90
 
-  const cosine = Math.min(1, Math.abs(gravity.z) / magnitude)
+  // returns the square root of the sum of the squares of its arguments (should always be equals to 9,81)
+  const magnitude = Math.hypot(gravity.x, gravity.y, gravity.z)
+
+  if (magnitude === 0) {
+    // 90 is out of range so it will return non-plumb
+    return 90
+  }
+
+  // Math.abs to remeve negative sign, then cosinus a/h
+  const cosine = Math.abs(gravity.z) / magnitude
+  // math.acos calculate the cosinus angle in radiant. * 180 / Math.PI convert radiant in degrees
   const angleFromFlat = (Math.acos(cosine) * 180) / Math.PI
 
+  // return the minimum value between angleFromFlat and diff to 90 degrees
   return Math.min(angleFromFlat, Math.abs(90 - angleFromFlat))
 }
 
@@ -33,6 +36,7 @@ export function useDeviceTilt(isActive: boolean): DeviceTilt {
   const [tilt, setTilt] = useState<DeviceTilt>({ deviationDeg: null, isAligned: false })
 
   useEffect(() => {
+    // if not camera screen or with modal displayed, return
     if (!isActive) {
       setTilt({ deviationDeg: null, isAligned: false })
       return
@@ -46,14 +50,20 @@ export function useDeviceTilt(isActive: boolean): DeviceTilt {
 
     const start = async () => {
       const available = await DeviceMotion.isAvailableAsync()
-      if (!available || cancelled) return
+      // check available sensor or cancelled
+      if (!available || cancelled) {
+        return
+      }
 
       DeviceMotion.setUpdateInterval(SAMPLE_INTERVAL_MS)
+      // subscribe to listener on acceleration and gravity, if immobile phone, only gravity remain
       subscription = DeviceMotion.addListener(({ accelerationIncludingGravity }) => {
-        if (accelerationIncludingGravity == null) return
+        if (accelerationIncludingGravity == null) {
+          return
+        }
 
-        smoothed =
-          smoothed === null
+        // first value, no smoothed, other value smoothed to canceled hand shaking. side effect is a small delay ~1s
+        smoothed = smoothed === null
             ? accelerationIncludingGravity
             : {
                 x: smoothed.x + SMOOTHING * (accelerationIncludingGravity.x - smoothed.x),
@@ -61,11 +71,17 @@ export function useDeviceTilt(isActive: boolean): DeviceTilt {
                 z: smoothed.z + SMOOTHING * (accelerationIncludingGravity.z - smoothed.z),
               }
 
+        // calculate diff in degrees to the closest plumb
         const deviation = deviationFromPlumb(smoothed)
+        // < 5 : plumb, > 6 : unplumb, between 5 and 6 : keep last value
         const aligned = deviation < ALIGNED_BELOW_DEG ? true : deviation > MISALIGNED_ABOVE_DEG ? false : lastAligned
 
+        // round number to display short number
         const degrees = Math.round(deviation)
-        if (degrees === lastDegrees && aligned === lastAligned) return
+        // if nothing change, don't display any changes
+        if (degrees === lastDegrees && aligned === lastAligned) {
+          return
+        }
 
         lastDegrees = degrees
         lastAligned = aligned

@@ -7,10 +7,8 @@ import { CAPTURE_ASPECT_RATIO } from '@/features/capture/lib/captureFrame'
 
 type TraceCameraViewProps = {
   camera: TraceCamera
-  /** Coupe le capteur hors focus et pendant l'aperçu (batterie, caméra fantôme). */
   isActive: boolean
-  /** Analyse des images du viseur (`useCaptureSignals`). */
-  frameProcessor: ReadonlyFrameProcessor
+  frameProcessor?: ReadonlyFrameProcessor
   children?: ReactNode
 }
 

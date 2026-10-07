@@ -8,7 +8,6 @@ export type ResolutionCheck = {
   verdict: ResolutionVerdict
   shortSide: number
   megapixels: number
-  /** Message prêt à afficher (alerte de refus ou bandeau d'avertissement), `null` si `ok`. */
   message: string | null
 }
 

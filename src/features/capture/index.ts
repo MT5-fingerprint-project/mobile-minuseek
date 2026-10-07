@@ -3,6 +3,11 @@ export { default as CaptureControlsBar } from './components/CaptureControlsBar'
 export { default as CaptureOverlay } from './components/CaptureOverlay'
 export { default as CaptureSignalsBanner } from './components/CaptureSignalsBanner'
 export { default as TraceCameraView } from './components/TraceCameraView'
+export {
+  type CapturePermission,
+  type CapturePermissionStatus,
+  useCapturePermission,
+} from './hooks/useCapturePermission'
 export { type CaptureSignals, useCaptureSignals } from './hooks/useCaptureSignals'
 export {
   ALIGNED_BELOW_DEG,
@@ -11,16 +16,7 @@ export {
   MISALIGNED_ABOVE_DEG,
   useDeviceTilt,
 } from './hooks/useDeviceTilt'
-export {
-  type CapturedPhotoFile,
-  type CapturePermission,
-  type CapturePermissionStatus,
-  type CapturePurpose,
-  type CaptureResult,
-  type TraceCamera,
-  useCapturePermission,
-  useTraceCamera,
-} from './hooks/useTraceCamera'
+export { type TraceCamera, useTraceCamera } from './hooks/useTraceCamera'
 export {
   CAPTURE_ASPECT_RATIO,
   COMPOSITION_FRAME,
@@ -48,3 +44,4 @@ export {
   SHARP_ABOVE,
   toGrayMat,
 } from './lib/sharpnessDetection'
+export { type CapturePurpose, type CaptureResult } from './types/capture'

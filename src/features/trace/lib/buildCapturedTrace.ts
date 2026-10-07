@@ -1,15 +1,7 @@
 import * as Device from 'expo-device'
 
+import type { CapturedPhoto } from '@/features/shared/types/photo'
 import type { SelectedTrace, TraceLocationPhoto } from '@/features/trace/types/trace'
-
-export type CapturedPhoto = {
-  /** Chemin renvoyé par la caméra — filesystem nu (`/data/…`) ou URI `file://`. */
-  path: string
-  width: number
-  height: number
-  /** Type MIME du conteneur produit. La capture guidée shoote en JPEG. */
-  mimeType?: string
-}
 
 function toFileUri(path: string): string {
   return path.startsWith('file://') ? path : `file://${path}`

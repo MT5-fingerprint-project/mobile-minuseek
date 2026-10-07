@@ -1,6 +1,6 @@
 import { Linking, View } from 'react-native'
 
-import type { CapturePermissionStatus } from '@/features/capture/hooks/useTraceCamera'
+import type { CapturePermissionStatus } from '@/features/capture/hooks/useCapturePermission'
 import { Button } from '@/features/shared/ui/button'
 import { Text } from '@/features/shared/ui/text'
 

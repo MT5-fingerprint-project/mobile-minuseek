@@ -8,7 +8,6 @@ type CaptureControlsBarProps = {
   onToggleTorch: () => void
   hasTorch: boolean
   isTorchOn: boolean
-  /** Déclencheur inactif tant que la session n'est pas prête, ou pendant la prise de vue. */
   isCaptureDisabled: boolean
   isCapturing: boolean
 }

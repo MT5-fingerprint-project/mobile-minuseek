@@ -10,7 +10,7 @@ export { usePickImageForCase } from './hooks/usePickImageForCase'
 export { type TraceCaptureFlow, type TraceCaptureStep, useTraceCaptureFlow } from './hooks/useTraceCaptureFlow'
 export { useTraces } from './hooks/useTraces'
 export { useUploadTrace } from './hooks/useUploadTrace'
-export { buildCapturedTrace, buildLocationPhoto, type CapturedPhoto } from './lib/buildCapturedTrace'
+export { buildCapturedTrace, buildLocationPhoto } from './lib/buildCapturedTrace'
 export {
   ACCEPTED_TRACE_MIME_TYPES,
   buildSelectedTrace,
